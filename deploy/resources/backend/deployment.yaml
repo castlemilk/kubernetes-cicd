@@ -1,0 +1,22 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: guestbook-backend
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: guestbook-backend 
+        image: guestbook-backend
+        imagePullPolicy: Never
+        ports:
+        - name: http-server
+          containerPort: 8080
+        - name: debug
+          containerPort: 3000
+        env:
+        - name: PORT
+          value: "8080"
+        - name: GUESTBOOK_DB_ADDR
+          value: $(MONGODB_SERVICE):27017

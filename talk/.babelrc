@@ -1,0 +1,34 @@
+{
+  "presets": [
+    "@babel/preset-env",
+    "@babel/preset-react"
+  ],
+  "plugins": [
+    "react-hot-loader/babel",
+    ["@babel/plugin-proposal-decorators", { "legacy": true }],
+    // ["prismjs", {
+    //   "languages": ["vim", "javascript", "markup","markdown","makefile", "bash", "yaml", "jsx", "reason"],
+    //   "plugins": ["line-numbers"],
+    //   // "theme": "twilight",
+    //   "css": true
+    // }]
+  ],
+  "env": {
+    "production": {
+      "plugins": [
+        ["@babel/plugin-transform-modules-commonjs"],
+        "transform-react-remove-prop-types",
+        "@babel/plugin-transform-react-constant-elements",
+        "@babel/plugin-transform-react-inline-elements",
+        "@babel/plugin-transform-runtime",
+        ["@babel/plugin-proposal-decorators", { "legacy": true }],
+        
+      ]
+    },
+    "test": {
+      "plugins": [
+        "@babel/plugin-transform-modules-commonjs"
+      ]
+    }
+  }
+}

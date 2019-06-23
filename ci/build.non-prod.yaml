@@ -1,0 +1,79 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: dev-xp-git
+spec:
+  type: git
+  params:
+    - name: revision
+      value: master
+    - name: url
+      value: https://github.com/castlemilk/next-dev-xp
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: dev-xp-image
+spec:
+  type: image
+  params:
+    - name: url
+      value: gcr.io/${PROJECT_ID}/webapp
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: build-docker-image-from-git-source
+spec:
+  inputs:
+    resources:
+      - name: docker-source
+        type: git
+    params:
+      - name: pathToDockerFile
+        description: The path to the dockerfile to build
+        default: /workspace/docker-source/Dockerfile
+      - name: pathToContext
+        description:
+          The build context used by Kaniko
+          (https://github.com/GoogleContainerTools/kaniko#kaniko-build-contexts)
+        default: /workspace/docker-source
+  outputs:
+    resources:
+      - name: builtImage
+        type: image
+  steps:
+    - name: build-and-push
+      image: gcr.io/kaniko-project/executor
+      command:
+        - /kaniko/executor
+      args:
+        - --dockerfile=${inputs.params.pathToDockerFile}
+        - --destination=${outputs.resources.builtImage.url}
+        - --context=${inputs.params.pathToContext}
+        - --verbosity=debug
+---
+apiVersion: tekton.dev/v1alpha1
+kind: TaskRun
+metadata:
+  name: build-docker-image-from-git-source-task-run
+spec:
+  taskRef:
+    name: build-docker-image-from-git-source
+  trigger:
+    type: manual
+  inputs:
+    resources:
+      - name: docker-source
+        resourceRef:
+          name: dev-xp-git
+    params:
+      - name: pathToDockerFile
+        value: /workspace/docker-source/webapp/Dockerfile
+      - name: pathToContext
+        value: /workspace/docker-source/webapp
+  outputs:
+    resources:
+      - name: builtImage
+        resourceRef:
+          name: dev-xp-image

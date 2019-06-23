@@ -1,0 +1,47 @@
+apiVersion: skaffold/v1beta6
+kind: Config
+build:
+  artifacts:
+    - image: guestbook-backend
+      context: guestbook/src/backend
+  tagPolicy:
+    sha256: {}
+test:
+- image: gcr.io/k8s-skaffold/example
+  structureTests:
+  - ./test/*
+deploy:
+  kubectl:
+    manifests:
+      - kubernetes-manifests/**
+  kustomize:
+        path: ./guestbook/resources/overlays/non-production    
+profiles:
+  - name: gke-non-prod-guestbook 
+    build:
+      artifacts:
+      - image: asia.gcr.io/developer-experience-239623/guestbook-frontend
+        context: guestbook/src/frontend
+      googleCloudBuild:
+        projectId: developer-experience-239623
+    deploy:
+      kustomize:
+        path: ./guestbook/resources/overlays/non-production
+  - name: gke-prod-guestbook 
+    build:
+      artifacts:
+      - image: asia.gcr.io/developer-experience-239623/guestbook-frontend
+        context: guestbook/src/frontend
+      googleCloudBuild:
+        projectId: developer-experience-239623
+    deploy:
+      kustomize:
+        path: ./guestbook/resources/overlays/production
+  - name: local-guestbook 
+    build:
+      artifacts:
+      - image: guestbook-frontend
+        context: guestbook/src/frontend
+    deploy:
+      kustomize:
+        path: ./guestbook/resources/overlays/local

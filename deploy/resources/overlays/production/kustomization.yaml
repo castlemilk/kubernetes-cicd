@@ -1,0 +1,23 @@
+namePrefix: np- 
+commonLabels:
+  app: guestbook
+
+bases:
+- ../../backend
+- ../../frontend
+- ../../mongodb
+images:
+- name: guestbook-frontend
+  newName: asia.gcr.io/developer-experience-239709/guestbook-frontend
+- name: guestbook-backend
+  newName: asia.gcr.io/developer-experience-239709/guestbook-backend
+patches:
+- frontend_replica_count.yaml
+- backend_replica_count.yaml
+- mongodb_cpu_limit.yaml
+vars:
+  - name: MONGODB_SERVICE
+    objref:
+      kind: Service
+      name: guestbook-mongodb
+      apiVersion: v1

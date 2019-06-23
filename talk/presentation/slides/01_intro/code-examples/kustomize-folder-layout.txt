@@ -1,0 +1,26 @@
+kustomize
+├── backend
+│   ├── deployment.yaml
+│   ├── kustomization.yaml
+│   └── service.yaml
+├── frontend
+│   ├── deployment.yaml
+│   ├── kustomization.yaml
+│   └── service.yaml
+├── mongodb
+│   ├── deployment.yaml
+│   ├── kustomization.yaml
+│   └── service.yaml
+└── overlays
+    ├── local
+    │   └── kustomization.yaml
+    ├── non-production
+    │   ├── backend_replica_count.yaml
+    │   ├── frontend_replica_count.yaml
+    │   ├── kustomization.yaml
+    │   └── mongodb_cpu_limit.yaml
+    └── production
+        ├── backend_replica_count.yaml
+        ├── frontend_replica_count.yaml
+        ├── kustomization.yaml
+        └── mongodb_cpu_limit.yaml

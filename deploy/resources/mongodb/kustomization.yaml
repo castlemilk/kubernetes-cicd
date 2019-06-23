@@ -1,0 +1,5 @@
+commonLabels:
+  tier: db
+resources:
+- deployment.yaml
+- service.yaml

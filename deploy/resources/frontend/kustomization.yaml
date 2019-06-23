@@ -1,0 +1,5 @@
+commonLabels:
+  tier: frontend
+resources:
+- deployment.yaml
+- service.yaml
