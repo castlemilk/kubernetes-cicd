@@ -1,30 +1,41 @@
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
-  name: dev-xp-git
+  name: application-git-repo
 spec:
   type: git
   params:
     - name: revision
       value: master
     - name: url
-      value: https://github.com/castlemilk/next-dev-xp
+      value: https://github.com/castlemilk/kubernetes-cicd
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
-  name: dev-xp-image
+  name: app-frontend
 spec:
   type: image
   params:
     - name: url
-      value: host.docker.local:5000/dev-xp/webapp
-      # value: registry.kube-system.svc.cluster.local/dev-xp/webapp
+      # value: host.docker.local:5000/app/frontend
+      value: registry.kube-system.svc.cluster.local/demo/frontend
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: app-backend
+spec:
+  type: image
+  params:
+    - name: url
+      # value: host.docker.local:5000/app/frontend
+      value: registry.kube-system.svc.cluster.local/demo/backend
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: build-docker-image-from-git-source
+  name: build-application
 spec:
   inputs:
     resources:
@@ -55,27 +66,52 @@ spec:
         - --cache=true
         - --insecure
 ---
+# apiVersion: tekton.dev/v1alpha1
+# kind: TaskRun
+# metadata:
+#   name: build-frontend
+# spec:
+#   taskRef:
+#     name: build-application
+#   trigger:
+#     type: manual
+#   inputs:
+#     resources:
+#       - name: docker-source
+#         resourceRef:
+#           name: application-git-repo
+#     params:
+#       - name: pathToDockerFile
+#         value: /workspace/docker-source/app/frontend/Dockerfile
+#       - name: pathToContext
+#         value: /workspace/docker-source/app/frontend
+#   outputs:
+#     resources:
+#       - name: builtImage
+#         resourceRef:
+#           name: frontend-image
+---
 apiVersion: tekton.dev/v1alpha1
 kind: TaskRun
 metadata:
-  name: build-docker-image-from-git-source-task-run
+  name: build-backend
 spec:
   taskRef:
-    name: build-docker-image-from-git-source
+    name: build-application
   trigger:
     type: manual
   inputs:
     resources:
       - name: docker-source
         resourceRef:
-          name: dev-xp-git
+          name: application-git-repo
     params:
       - name: pathToDockerFile
-        value: /workspace/docker-source/webapp/Dockerfile
+        value: /workspace/docker-source/app/backend/Dockerfile
       - name: pathToContext
-        value: /workspace/docker-source/webapp
+        value: /workspace/docker-source/app/backend
   outputs:
     resources:
       - name: builtImage
         resourceRef:
-          name: dev-xp-image
+          name: frontend-image

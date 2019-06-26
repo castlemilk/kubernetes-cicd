@@ -46,7 +46,8 @@ local.istio.install: fetch.infra
 	kubectl apply -f deploy/resources/istio/${ISTIO_VERSION}/istio-init.yaml
 	helm template deploy/charts/istio-${ISTIO_VERSION}/install/kubernetes/helm/istio --name istio --namespace istio-system  -f deploy/values/istio/${ISTIO_VERSION}/values.yaml > deploy/resources/istio/${ISTIO_VERSION}/istio.yaml
 	kubectl apply -f deploy/resources/istio/${ISTIO_VERSION}/istio.yaml
-
+local.tekton.install:
+	kubectl apply -f https://storage.googleapis.com/tekton-releases/latest/release.yaml
 local.knative.install:
 	kubectl apply --selector knative.dev/crd-install=true \
 	--filename https://github.com/knative/serving/releases/download/v0.6.1/serving.yaml \
@@ -100,6 +101,13 @@ cluster.gke.install:
 		--scopes="https://www.googleapis.com/auth/cloud-platform"
 
 
+clean:
+	kubectl delete --ignore-not-found istio-system
+	kubectl delete --ignore-not-found knative-serving 
+	kubectl delete --ignore-not-found knative-eventing
+	kubectl delete --ignore-not-found knative-sources 
+	kubectl delete --ignore-not-found knative-monitoring
+	kubectl delete --ignore-not-found knative-build
 
 ###Help
 ## Show help
