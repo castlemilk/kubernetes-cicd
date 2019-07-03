@@ -36,6 +36,12 @@ local.cluster.create:
   --vm-driver=hyperkit \
   --disk-size=30g \
   --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"
+	minikube addons enable registry
+local.cluster.patch:
+	@kubectl patch daemonset -n kube-system registry-proxy --type='json' -p='[ \
+		{"op": "replace", "path": "/spec/selector/matchLabels", "value": { "kubernetes.io/minikube-addons": "registry-proxy", "addonmanager.kubernetes.io/mode":"Reconcile" } }, \
+		{"op": "replace", "path": "/spec/template/metadata/labels", "value": { "kubernetes.io/minikube-addons": "registry-proxy", "addonmanager.kubernetes.io/mode":"Reconcile" } } \
+		]'
 
 local.istio.install: fetch.infra
 	mkdir -p deploy/resources/istio/${ISTIO_VERSION}
@@ -44,10 +50,14 @@ local.istio.install: fetch.infra
 	kubectl label namespace istio-system --overwrite istio-injection=disabled
 	helm template deploy/charts/istio-${ISTIO_VERSION}/install/kubernetes/helm/istio-init --name istio-init --namespace istio-system > deploy/resources/istio/${ISTIO_VERSION}/istio-init.yaml
 	kubectl apply -f deploy/resources/istio/${ISTIO_VERSION}/istio-init.yaml
+	sleep 10;
 	helm template deploy/charts/istio-${ISTIO_VERSION}/install/kubernetes/helm/istio --name istio --namespace istio-system  -f deploy/values/istio/${ISTIO_VERSION}/values.yaml > deploy/resources/istio/${ISTIO_VERSION}/istio.yaml
 	kubectl apply -f deploy/resources/istio/${ISTIO_VERSION}/istio.yaml
 local.tekton.install:
 	kubectl apply -f https://storage.googleapis.com/tekton-releases/latest/release.yaml
+local.tekton-listener.install:
+	kubectl create namespace tekton-experimental --dry-run -o yaml | kubectl apply -f -
+	kubectl apply -f deploy/resources/tekton-listener
 local.knative.install:
 	kubectl apply --selector knative.dev/crd-install=true \
 	--filename https://github.com/knative/serving/releases/download/v0.6.1/serving.yaml \

@@ -13,7 +13,7 @@ spec:
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
-  name: app-frontend
+  name: frontend-image
 spec:
   type: image
   params:
@@ -24,7 +24,7 @@ spec:
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
-  name: app-backend
+  name: backend-image
 spec:
   type: image
   params:
@@ -65,6 +65,7 @@ spec:
         - --context=${inputs.params.pathToContext}
         - --cache=true
         - --insecure
+        - --verbosity=debug
 ---
 # apiVersion: tekton.dev/v1alpha1
 # kind: TaskRun
@@ -114,4 +115,4 @@ spec:
     resources:
       - name: builtImage
         resourceRef:
-          name: frontend-image
+          name: backend-image

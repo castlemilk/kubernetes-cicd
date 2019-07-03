@@ -1,0 +1,41 @@
+apiVersion: tektonexperimental.dev/v1alpha1
+kind: EventBinding
+metadata:
+  name: $PIPELINE_NAME-binding
+  namespace: $PIPELINE_NAME
+  labels:
+    app: $PIPELINE_NAME
+spec:
+  eventname: pushevents
+  eventtype: dev.knative.source.github.push
+  serviceAccount: $PIPELINE_NAME-account
+  selector:
+    matchLabels:
+      app: $PIPELINE_NAME
+  template:
+    metadata:
+      labels:
+        role: $PIPELINE_NAME
+  pipelineRef:
+    name: $PIPELINE_NAME-pipeline
+  sourceref:
+    name: $PIPELINE_NAME-source
+  resourceTemplates:
+  - name: source-repo
+    metadata:
+      name: source-repo
+      namespace: $PIPELINE_NAME
+    spec:
+      type: git
+      params:
+      - name: url
+        value: https://github.com/$GHREPO
+  - name: image-$PIPELINE_NAME
+    metadata:
+      name: image-$PIPELINE_NAME
+      namespace: $PIPELINE_NAME
+    spec:
+      type: image
+      params:
+      - name: url
+        value: $DOCKER_HUB_USERNAME/$PIPELINE_NAME

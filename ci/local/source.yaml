@@ -1,0 +1,23 @@
+apiVersion: sources.eventing.knative.dev/v1alpha1
+kind: GitHubSource
+metadata:
+  name: $PIPELINE_NAME-ghsource
+  namespace: $PIPELINE_NAME
+spec:
+  serviceAccountName: $PIPELINE_NAME-account
+  eventTypes:
+    - pull_request
+    - push
+  ownerAndRepository: $GHREPO
+  accessToken:
+    secretKeyRef:
+      name: githubsecret
+      key: accessToken
+  secretToken:
+    secretKeyRef:
+      name: githubsecret
+      key: secretToken
+  sink:
+    apiVersion: v1
+    kind: Service
+    name: -service
