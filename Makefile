@@ -71,18 +71,14 @@ local.tekton-listener.install:
 	cd $$GOPATH/src/github.com/tektoncd/experimental/tekton-listener; KO_DOCKER_REPO=docker.io/castlemilk ko apply -f config
 local.knative.install:
 	kubectl apply --selector knative.dev/crd-install=true \
-	--filename https://github.com/knative/serving/releases/download/v0.6.1/serving.yaml \
-	--filename https://github.com/knative/eventing/releases/download/v0.6.0/release.yaml \
-	--filename https://github.com/knative/eventing-sources/releases/download/v0.6.0/eventing-sources.yaml \
-	--filename https://github.com/knative/serving/releases/download/v0.6.0/monitoring.yaml \
-	--filename https://raw.githubusercontent.com/knative/serving/v0.6.1/third_party/config/build/clusterrole.yaml
+	--filename https://github.com/knative/serving/releases/download/v0.7.1/serving.yaml \
+	--filename https://github.com/knative/eventing/releases/download/v0.7.1/release.yaml \
+	--filename https://github.com/knative/serving/releases/download/v0.7.1/monitoring.yaml
 	sleep 10;
 	kubectl apply --selector networking.knative.dev/certificate-provider!=cert-manager \
-	--filename https://github.com/knative/serving/releases/download/v0.6.1/serving.yaml \
-	--filename https://github.com/knative/eventing/releases/download/v0.6.0/release.yaml \
-	--filename https://github.com/knative/eventing-sources/releases/download/v0.6.0/eventing-sources.yaml \
-	--filename https://github.com/knative/serving/releases/download/v0.6.1/monitoring.yaml \
-	--filename https://raw.githubusercontent.com/knative/serving/v0.6.1/third_party/config/build/clusterrole.yaml
+	--filename https://github.com/knative/serving/releases/download/v0.7.1/serving.yaml \
+	--filename https://github.com/knative/eventing/releases/download/v0.7.1/release.yaml \
+	--filename https://github.com/knative/serving/releases/download/v0.7.1/monitoring.yaml
 
 local.knative.status:
 	kubectl get pods --namespace knative-serving 
@@ -121,6 +117,12 @@ cluster.gke.install:
 		--no-user-output-enabled \
 		--scopes="https://www.googleapis.com/auth/cloud-platform"
 
+clean.knative:
+	kubectl delete --ignore-not-found namespace knative-serving 
+	kubectl delete --ignore-not-found namespace knative-eventing
+	kubectl delete --ignore-not-found namespace knative-sources 
+	kubectl delete --ignore-not-found namespace knative-monitoring
+	kubectl delete --ignore-not-found namespace knative-build
 
 clean:
 	kubectl delete --ignore-not-found istio-system
