@@ -20,12 +20,18 @@ define wait_for_ns_termination
 	@while [ "$$(kubectl get namespace $(1) > /dev/null 2>&1; echo $$?)" = "0" ]; do printf "."; sleep 2; done;
 	@printf " ✅\n";
 endef
+define wait_for_crds
+	@printf "🌀 waiting for istio CRDs to synchronise"; 	
+	@while [ $$(kubectl get customresourcedefinitions | grep istio.io | wc -l) -lt 50 ]; do printf "."; sleep 2; done;
+	@printf " ✅\n";
+endef
 fetch.infra:
 ifeq (,$(wildcard ./deploy/charts/istio-${ISTIO_VERSION}))
 	@read -p "⚠️   Istio folder not found for v${ISTIO_VERSION}, Install Istio now?, Continue (Y/N): " confirm && echo $$confirm | grep -iq "^[yY]" || exit 1
 	mkdir -p deploy/charts
 	cd deploy/charts; curl -L https://git.io/getLatestIstio | ISTIO_VERSION=${ISTIO_VERSION} sh -
 endif
+
 ## initialise project environment
 init:
 
@@ -38,6 +44,7 @@ local.cluster.create:
   --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"
 	minikube addons enable registry
 local.cluster.patch:
+	minikube addons enable registry
 	@kubectl patch daemonset -n kube-system registry-proxy --type='json' -p='[ \
 		{"op": "replace", "path": "/spec/selector/matchLabels", "value": { "kubernetes.io/minikube-addons": "registry-proxy", "addonmanager.kubernetes.io/mode":"Reconcile" } }, \
 		{"op": "replace", "path": "/spec/template/metadata/labels", "value": { "kubernetes.io/minikube-addons": "registry-proxy", "addonmanager.kubernetes.io/mode":"Reconcile" } } \
@@ -50,14 +57,18 @@ local.istio.install: fetch.infra
 	kubectl label namespace istio-system --overwrite istio-injection=disabled
 	helm template deploy/charts/istio-${ISTIO_VERSION}/install/kubernetes/helm/istio-init --name istio-init --namespace istio-system > deploy/resources/istio/${ISTIO_VERSION}/istio-init.yaml
 	kubectl apply -f deploy/resources/istio/${ISTIO_VERSION}/istio-init.yaml
-	sleep 10;
+	$(call wait_for_crds)
 	helm template deploy/charts/istio-${ISTIO_VERSION}/install/kubernetes/helm/istio --name istio --namespace istio-system  -f deploy/values/istio/${ISTIO_VERSION}/values.yaml > deploy/resources/istio/${ISTIO_VERSION}/istio.yaml
 	kubectl apply -f deploy/resources/istio/${ISTIO_VERSION}/istio.yaml
 local.tekton.install:
 	kubectl apply -f https://storage.googleapis.com/tekton-releases/latest/release.yaml
 local.tekton-listener.install:
-	kubectl create namespace tekton-experimental --dry-run -o yaml | kubectl apply -f -
-	kubectl apply -f deploy/resources/tekton-listener
+	@mkdir -p $$GOPATH/src/github.com/tektoncd
+	@if [ ! -d $$GOPATH/src/github.com/tektoncd/experimental/tekton-listener ]; then \
+		cd $$GOPATH/src/github.com/tektoncd; git clone git@github.com:tektoncd/experimental.git; \
+	fi
+	cd $$GOPATH/src/github.com/tektoncd/experimental/tekton-listener; dep ensure
+	cd $$GOPATH/src/github.com/tektoncd/experimental/tekton-listener; KO_DOCKER_REPO=docker.io/castlemilk ko apply -f config
 local.knative.install:
 	kubectl apply --selector knative.dev/crd-install=true \
 	--filename https://github.com/knative/serving/releases/download/v0.6.1/serving.yaml \

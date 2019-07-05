@@ -2,3 +2,4 @@
 .vscode
 .idea
 istio-1.*
+github-secret.yaml

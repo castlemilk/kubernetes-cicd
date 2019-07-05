@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
-  name: application-git-repo
+  name: demo-source-repo
 spec:
   type: git
   params:
@@ -18,7 +18,6 @@ spec:
   type: image
   params:
     - name: url
-      # value: host.docker.local:5000/app/frontend
       value: registry.kube-system.svc.cluster.local/demo/frontend
 ---
 apiVersion: tekton.dev/v1alpha1
@@ -29,13 +28,12 @@ spec:
   type: image
   params:
     - name: url
-      # value: host.docker.local:5000/app/frontend
       value: registry.kube-system.svc.cluster.local/demo/backend
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: build-application
+  name: build-backend
 spec:
   inputs:
     resources:
@@ -44,12 +42,12 @@ spec:
     params:
       - name: pathToDockerFile
         description: The path to the dockerfile to build
-        default: /workspace/docker-source/Dockerfile
+        default: /workspace/docker-source/app/Dockerfile
       - name: pathToContext
         description:
           The build context used by Kaniko
           (https://github.com/GoogleContainerTools/kaniko#kaniko-build-contexts)
-        default: /workspace/docker-source
+        default: /workspace/docker-source/app/backend
   outputs:
     resources:
       - name: builtImage
@@ -64,55 +62,49 @@ spec:
         - --destination=${outputs.resources.builtImage.url}
         - --context=${inputs.params.pathToContext}
         - --cache=true
+        - --cache-repo=${outputs.resources.builtImage.url}
         - --insecure
         - --verbosity=debug
 ---
-# apiVersion: tekton.dev/v1alpha1
-# kind: TaskRun
-# metadata:
-#   name: build-frontend
-# spec:
-#   taskRef:
-#     name: build-application
-#   trigger:
-#     type: manual
-#   inputs:
-#     resources:
-#       - name: docker-source
-#         resourceRef:
-#           name: application-git-repo
-#     params:
-#       - name: pathToDockerFile
-#         value: /workspace/docker-source/app/frontend/Dockerfile
-#       - name: pathToContext
-#         value: /workspace/docker-source/app/frontend
-#   outputs:
-#     resources:
-#       - name: builtImage
-#         resourceRef:
-#           name: frontend-image
----
 apiVersion: tekton.dev/v1alpha1
-kind: TaskRun
+kind: Pipeline
 metadata:
-  name: build-backend
+  name: backend-pipeline-ci
 spec:
-  taskRef:
-    name: build-application
-  trigger:
-    type: manual
-  inputs:
-    resources:
-      - name: docker-source
-        resourceRef:
-          name: application-git-repo
+  resources:
+  - name: demo-source-repo
+    type: git
+  - name: backend-image
+    type: image
+  tasks:
+  - name: build-backend 
+    taskRef:
+      name: build-backend
     params:
       - name: pathToDockerFile
         value: /workspace/docker-source/app/backend/Dockerfile
       - name: pathToContext
         value: /workspace/docker-source/app/backend
-  outputs:
     resources:
+      inputs:
+      - name: docker-source
+        resource: demo-source-repo
+      outputs:
       - name: builtImage
-        resourceRef:
-          name: backend-image
+        resource: backend-image
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineRun
+metadata:
+  name: backend-pipeline-ci
+spec:
+  pipelineRef:
+    name: backend-pipeline-ci
+  serviceAccount: 'default'
+  resources:
+  - name: demo-source-repo
+    resourceRef:
+      name: demo-source-repo
+  - name: backend-image
+    resourceRef:
+      name: backend-image

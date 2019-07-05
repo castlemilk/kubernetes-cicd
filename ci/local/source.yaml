@@ -1,14 +1,14 @@
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: GitHubSource
 metadata:
-  name: $PIPELINE_NAME-ghsource
-  namespace: $PIPELINE_NAME
+  name: demo-ghsource
+  namespace: default
 spec:
-  serviceAccountName: $PIPELINE_NAME-account
+  # serviceAccountName: backend-pipeline-ci-account
   eventTypes:
     - pull_request
     - push
-  ownerAndRepository: $GHREPO
+  ownerAndRepository: castlemilk/kubernetes-cicd
   accessToken:
     secretKeyRef:
       name: githubsecret
@@ -18,6 +18,16 @@ spec:
       name: githubsecret
       key: secretToken
   sink:
-    apiVersion: v1
+    apiVersion: serving.knative.dev/v1alpha1
     kind: Service
-    name: -service
+    name: github-event-display
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: github-event-display
+spec:
+  template:
+    spec:
+      containers:
+      - image: gcr.io/knative-releases/github.com/knative/eventing-sources/cmd/event_display

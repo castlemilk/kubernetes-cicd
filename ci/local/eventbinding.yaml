@@ -1,41 +1,41 @@
 apiVersion: tektonexperimental.dev/v1alpha1
 kind: EventBinding
 metadata:
-  name: $PIPELINE_NAME-binding
-  namespace: $PIPELINE_NAME
+  name: backend-binding-ci
+  namespace: default
   labels:
-    app: $PIPELINE_NAME
+    app: backend-binding-ci
 spec:
   eventname: pushevents
   eventtype: dev.knative.source.github.push
-  serviceAccount: $PIPELINE_NAME-account
+  serviceAccount: backend-binding-ci-account
   selector:
     matchLabels:
-      app: $PIPELINE_NAME
+      app: backend-binding-ci
   template:
     metadata:
       labels:
-        role: $PIPELINE_NAME
+        role: backend-binding-ci
   pipelineRef:
-    name: $PIPELINE_NAME-pipeline
+    name: backend-pipeline-ci
   sourceref:
-    name: $PIPELINE_NAME-source
+    name: backend-pipeline-ci-source
   resourceTemplates:
-  - name: source-repo
+  - name: demo-source-repo
     metadata:
-      name: source-repo
-      namespace: $PIPELINE_NAME
+      name: demo-source-repo
+      namespace: default 
     spec:
       type: git
       params:
       - name: url
-        value: https://github.com/$GHREPO
-  - name: image-$PIPELINE_NAME
+        value: https://github.com/castlemilk/kubernetes-cicd
+  - name: backend-image 
     metadata:
-      name: image-$PIPELINE_NAME
-      namespace: $PIPELINE_NAME
+      name: backend-image 
+      namespace: default 
     spec:
       type: image
       params:
       - name: url
-        value: $DOCKER_HUB_USERNAME/$PIPELINE_NAME
+        value: registry.kube-system.svc.cluster.local/demo/backend
