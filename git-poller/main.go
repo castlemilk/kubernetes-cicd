@@ -12,12 +12,14 @@ import (
 	"strconv"
 	"encoding/json"
 	"bytes"
+	// "io/ioutil"
 	
 	"github.com/knative/eventing-contrib/pkg/kncloudevents"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/kelseyhightower/envconfig"
+	gh "gopkg.in/go-playground/webhooks.v5/github"
 )
 
 // GitRepoStatus represents the progress made synchronising with a git
@@ -136,6 +138,13 @@ func CreateStatus(url string, state GitHubPRStatuses) {
 
 func main() {
 	flag.Parse()
+	var basic gh.PushPayload
+	basePushPayload, err := os.Open("push.json")
+	decoder := json.NewDecoder(basePushPayload)
+	decoder.Decode(&basic)
+	defer func() {
+		_ = basePushPayload.Close()
+	}()
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Printf("[ERROR] Failed to process env var: %s", err)
@@ -194,7 +203,7 @@ func main() {
 						// 	"beats": true,
 						// },
 					}.AsV02(),
-					Data: pullRequest,
+					Data: basic,
 				}
 		
 				if _, err := c.Send(context.Background(), event); err != nil {
