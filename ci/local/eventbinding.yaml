@@ -6,8 +6,11 @@ metadata:
   labels:
     app: backend-ci-binding
 spec:
+  # eventref:
+  #   eventname: pushevents
+  #   eventtype: dev.knative.source.github.push
   eventname: pushevents
-  eventtype: dev.knative.source.github.pull_request
+  eventtype: dev.knative.source.github.push
   serviceAccount: backend-ci-binding-admin
   selector:
     matchLabels:
