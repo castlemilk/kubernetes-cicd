@@ -88,7 +88,7 @@ func init() {
 	flag.StringVar(&sink, "sink", "", "the host url to heartbeat to")
 	flag.StringVar(&repourl, "repourl", "https://api.github.com/repos/castlemilk/kubernetes-cicd", "the repository to poll")
 	flag.StringVar(&periodStr, "period", "20", "the polling interval for checking github")
-	flag.StringVar(&accessToken, "accessToken", "b571a44b1329f792f7c91b99df29f2de591cfa32", "access token for repository")
+	flag.StringVar(&accessToken, "accessToken", "xxxx", "access token for repository")
 }
 
 type envConfig struct {
@@ -98,6 +98,7 @@ type envConfig struct {
 
 	// Name of this pod.
 	Name string `envconfig:"POD_NAME"`
+	AccessToken string `envconfig:"ACCESS_TOKEN"`
 
 	// Namespace this pod exists in.
 	Namespace string `envconfig:"POD_NAMESPACE"`
@@ -123,10 +124,11 @@ func CreateStatus(url string, state GitHubPRStatuses) {
 	jsonValue, _ := json.Marshal(payload)
 	fmt.Println("url:", url)
 	fmt.Println("payload:", bytes.NewBuffer(jsonValue))
-	resp, err := http.Post(url + "?access_token=" + accessToken, "application/json", bytes.NewBuffer(jsonValue))
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonValue))
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("request URL:", resp.Request.URL.String())
 	fmt.Println("response Status:", resp.Status)
 	fmt.Println("response Headers:", resp.Header)
 
@@ -181,7 +183,7 @@ func main() {
 			log.Printf("statuses: %s, status_count: %d\n", string(statuses_list), len(statuses))
 			if len(statuses) == 0 {
 				log.Printf("new PR [%d], initiasing build process", pullRequest.Number)
-				CreateStatus(pullRequest.StatusesURL, Pending)
+				CreateStatus(pullRequest.StatusesURL + "?access_token=" + env.AccessToken , Pending)
 				event := cloudevents.Event{
 					Context: cloudevents.EventContextV02{
 						Type:   "dev.knative.source.github.pull_request",
