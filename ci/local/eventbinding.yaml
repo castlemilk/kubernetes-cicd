@@ -1,21 +1,21 @@
 apiVersion: tektonexperimental.dev/v1alpha1
 kind: EventBinding
 metadata:
-  name: backend-binding-ci
+  name: backend-ci-binding
   namespace: default
   labels:
-    app: backend-binding-ci
+    app: backend-ci-binding
 spec:
   eventname: pushevents
-  eventtype: dev.knative.source.github.push
-  serviceAccount: backend-binding-ci-account
+  eventtype: dev.knative.source.github.pull_request
+  serviceAccount: backend-ci-binding-admin
   selector:
     matchLabels:
-      app: backend-binding-ci
+      app: backend-ci-binding
   template:
     metadata:
       labels:
-        role: backend-binding-ci
+        role: backend-ci-binding
   pipelineRef:
     name: backend-pipeline-ci
   sourceref:
@@ -30,6 +30,8 @@ spec:
       params:
       - name: url
         value: https://github.com/castlemilk/kubernetes-cicd
+      - name: revision
+        value: master
   - name: backend-image 
     metadata:
       name: backend-image 

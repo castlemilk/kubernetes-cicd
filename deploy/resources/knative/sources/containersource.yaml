@@ -1,0 +1,32 @@
+apiVersion: sources.eventing.knative.dev/v1alpha1
+kind: ContainerSource
+metadata:
+  name: test-heartbeats
+spec:
+  image: "docker.io/castlemilk/heartbeats-6410d29c99b6ec4e0dd2fb3e6e31829e"
+  template:
+    spec:
+      containers:
+      - image: "docker.io/castlemilk/heartbeats-6410d29c99b6ec4e0dd2fb3e6e31829e"
+        name: heartbeats
+        args:
+          - --period=1
+        env:
+          - name: POD_NAME
+            value: "mypod"
+          - name: POD_NAMESPACE
+            value: "event-test"
+  sink:
+    apiVersion: serving.knative.dev/v1alpha1
+    kind: Service
+    name: event-display
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: event-display
+spec:
+  template:
+    spec:
+      containers:
+        - image: gcr.io/knative-releases/github.com/knative/eventing-sources/cmd/event_display
