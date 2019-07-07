@@ -186,7 +186,7 @@ func main() {
 				CreateStatus(pullRequest.StatusesURL + "?access_token=" + env.AccessToken , Pending)
 				event := cloudevents.Event{
 					Context: cloudevents.EventContextV02{
-						Type:   "dev.knative.source.github.pull_request",
+						Type:   "dev.knative.source.github.push",
 						Source: *types.ParseURLRef(eventSource),
 						// Extensions: map[string]interface{}{
 						// 	"the":   42,
@@ -202,7 +202,7 @@ func main() {
 				}
 
 			} else {
-				CreateStatus(pullRequest.StatusesURL, Success)	
+				CreateStatus(pullRequest.StatusesURL + "?access_token=" + env.AccessToken, Success)	
 			}
 
 		}
