@@ -8,4 +8,5 @@ require (
 	github.com/gogo/protobuf v1.2.0 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/knative/eventing-contrib v0.7.1
+	gopkg.in/go-playground/webhooks.v5 v5.11.0
 )
