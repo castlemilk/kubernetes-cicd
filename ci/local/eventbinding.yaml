@@ -9,6 +9,7 @@ spec:
   # eventref:
   #   eventname: pushevents
   #   eventtype: dev.knative.source.github.push
+  setBuildSha: "true"
   eventname: pushevents
   eventtype: dev.knative.source.github.push
   serviceAccount: backend-ci-binding-admin
