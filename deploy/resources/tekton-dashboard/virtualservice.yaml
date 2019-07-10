@@ -1,0 +1,61 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: tekton-dashboard
+spec:
+  gateways:
+  - knative-ingress-gateway.knative-serving.svc.cluster.local
+  - mesh
+  hosts:
+  - tekton-dashboard.tekton-pipelines.cicd.benebsworth.com
+  http:
+  - match:
+    - uri:
+        prefix: "/v1/extensions/webhooks-extension/web/"
+    rewrite:
+      uri: "/web/"
+    route:
+    - destination:
+        host: webhooks-extension.tekton-pipelines.svc.cluster.local
+        port:
+          number: 8080
+  - match:
+    - uri:
+        prefix: "/web/"
+    route:
+    - destination:
+        host: webhooks-extension.tekton-pipelines.svc.cluster.local
+        port:
+          number: 8080
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: tekton-dashboard.tekton-pipelines.svc.cluster.local
+        port:
+          number: 9097
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: tekton-dashboard
+  namespace: istio-system
+spec:
+  host: tekton-dashboard.tekton-pipelines.svc.cluster.local
+  exportTo: ["*"]
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: webhooks-extension
+  namespace: istio-system
+spec:
+  host: webhooks-extension.tekton-pipelines.svc.cluster.local
+  exportTo: ["*"]
+  trafficPolicy:
+    tls:
+      mode: DISABLE

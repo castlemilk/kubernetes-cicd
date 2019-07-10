@@ -1,0 +1,109 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: demo-source-repo
+spec:
+  type: git
+  params:
+    - name: revision
+      value: master
+    - name: url
+      value: https://github.com/castlemilk/kubernetes-cicd
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: frontend-image
+spec:
+  type: image
+  params:
+    - name: url
+      value: gcr.io/_PROJECT_ID/demo/frontend
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: backend-image
+spec:
+  type: image
+  params:
+    - name: url
+      value: gcr.io/_PROJECT_ID/demo/backend
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: build-backend
+spec:
+  inputs:
+    resources:
+      - name: docker-source
+        type: git
+    params:
+      - name: pathToDockerFile
+        description: The path to the dockerfile to build
+        default: /workspace/docker-source/app/Dockerfile
+      - name: pathToContext
+        description:
+          The build context used by Kaniko
+          (https://github.com/GoogleContainerTools/kaniko#kaniko-build-contexts)
+        default: /workspace/docker-source/app/backend
+  outputs:
+    resources:
+      - name: builtImage
+        type: image
+  steps:
+    - name: build-and-push
+      image: gcr.io/kaniko-project/executor
+      command:
+        - /kaniko/executor
+      args:
+        - --dockerfile=${inputs.params.pathToDockerFile}
+        - --destination=${outputs.resources.builtImage.url}
+        - --context=${inputs.params.pathToContext}
+        - --cache=true
+        - --cache-repo=${outputs.resources.builtImage.url}
+        - --insecure
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: backend-pipeline-ci
+spec:
+  resources:
+  - name: demo-source-repo
+    type: git
+  - name: backend-image
+    type: image
+  tasks:
+  - name: build-backend 
+    taskRef:
+      name: build-backend
+    params:
+      - name: pathToDockerFile
+        value: /workspace/docker-source/app/backend/Dockerfile
+      - name: pathToContext
+        value: /workspace/docker-source/app/backend
+    resources:
+      inputs:
+      - name: docker-source
+        resource: demo-source-repo
+      outputs:
+      - name: builtImage
+        resource: backend-image
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineRun
+metadata:
+  name: backend-pipeline-ci
+spec:
+  pipelineRef:
+    name: backend-pipeline-ci
+  serviceAccount: 'default'
+  resources:
+  - name: demo-source-repo
+    resourceRef:
+      name: demo-source-repo
+  - name: backend-image
+    resourceRef:
+      name: backend-image
