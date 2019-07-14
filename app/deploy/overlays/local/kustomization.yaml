@@ -1,0 +1,4 @@
+bases:
+- ../../backend/base
+- ../../frontend/base
+- ../../postgres/overlays/local
