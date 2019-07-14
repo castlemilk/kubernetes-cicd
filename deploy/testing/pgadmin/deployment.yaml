@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-postgresql-pgadmin
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels: {}
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+      - image: dpage/pgadmin4:latest
+        imagePullPolicy: Always
+        name: pgadmin
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 256Mi
+        env:
+        - name: PGADMIN_DEFAULT_EMAIL
+          value: "admin"
+        - name: PGADMIN_DEFAULT_PASSWORD
+          value: "admin"
+        - name: PGADMIN_PORT
+          value: "80"
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+      - name: pgbouncer
+        image: edoburu/pgbouncer:1.8.1
+        #imagePullPolicy: Always
+        ports:
+          - containerPort: 5432
+        envFrom:
+          - secretRef:
+              name: pgbouncer-config
+          - secretRef:
+               name: pgbouncer-db-credentials
+        env:
+          - name: POOL_MODE
+            value: session
+          - name: SERVER_RESET_QUERY
+            value: DISCARD ALL
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 256Mi
+        livenessProbe:
+          tcpSocket:
+            port: 5432
+          periodSeconds: 60
+        lifecycle:
+          preStop:
+            exec:
+              # Allow existing queries clients to complete within 120 seconds
+              command: ["/bin/sh", "-c", "killall -INT pgbouncer && sleep 120"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ['all']
+        volumeMounts:
+        - mountPath: /etc/pgbouncer/client
+          name: pgbouncer-ssl-client-secret
+        - mountPath: /etc/pgbouncer/ca
+          name: pgbouncer-ssl-ca-secret
+      volumes:
+      - name: pgbouncer-ssl-client-secret
+        secret:
+          secretName: cloud-postgres-ssl-client-secret
+      - name: pgbouncer-ssl-ca-secret
+        secret:
+          secretName: cloud-postgres-ssl-ca-secret

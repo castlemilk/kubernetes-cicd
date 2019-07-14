@@ -1,0 +1,16 @@
+commonLabels:
+  app: cloud-postgresql-pgadmin
+namespace: postgres
+configMapGenerator:
+- name: pgbouncer-config
+  literals:
+secretGenerator:
+- name: pgbouncer-db-credentials
+  env: db.credentials
+  type: Opaque 
+- name: pgbouncer-config
+  env: pgbouncer.conf
+  type: Opaque
+resources:
+  - deployment.yaml
+  - service.yaml

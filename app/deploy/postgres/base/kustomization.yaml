@@ -1,0 +1,16 @@
+resources:
+- configmap.yaml
+- deployment.yaml
+- pv.yaml
+- pvc.yaml
+- service.yaml
+namespace: default
+commonLabels:
+  tier: database
+configMapGenerator:
+  - name: bootstrap-scripts
+    files:
+    - init-scripts/0-bootstrap.sql
+    - init-scripts/1-products-schema.sql
+    - init-scripts/2-ratings-schema.sql
+    - init-scripts/3-products-data.sql

@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
-  name: demo-git-source
+  name: git-source
 spec:
   type: git
   params:
@@ -9,6 +9,16 @@ spec:
   #   value: master
   - name: url
     value: https://github.com/castlemilk/kubernetes-cicd
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: docker-image 
+spec:
+  type: image
+  params:
+  - name: url
+    value: gcr.io/kubernetes-cicd-246207/demo/backend
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -23,30 +33,10 @@ roleRef:
   name: cluster-admin
   apiGroup: rbac.authorization.k8s.io
 ---
-# apiVersion: tekton.dev/v1alpha1
-# kind: PipelineResource
-# metadata:
-#   name: frontend-image
-# spec:
-#   type: image
-#   params:
-#     - name: url
-#       value: gcr.io/_PROJECT_ID/demo/frontend
----
-apiVersion: tekton.dev/v1alpha1
-kind: PipelineResource
-metadata:
-  name: backend-image
-spec:
-  type: image
-  params:
-  - name: url
-    value: gcr.io/_PROJECT_ID/demo/backend
----
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: update-status
+  name: webhook-update-status
 spec:
   inputs:
     resources:
@@ -66,7 +56,7 @@ spec:
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: build-push
+  name: webhook-build-push
 spec:
   inputs:
     resources:
@@ -106,17 +96,17 @@ spec:
 apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
-  name: demo-pipeline
+  name: webhook-pipeline
 spec:
   resources:
-  - name: source-repo
+  - name: git-source
     type: git
-  - name: backend-image
+  - name: docker-image
     type: image
   tasks:
   - name: build-backend 
     taskRef:
-      name: build-push
+      name: webhook-build-push
     params:
       - name: pathToDockerFile
         value: /workspace/workspace/app/backend/Dockerfile
@@ -125,34 +115,34 @@ spec:
     resources:
       inputs:
       - name: workspace
-        resource: source-repo
+        resource: git-source 
       outputs:
       - name: builtImage
-        resource: backend-image
+        resource: docker-image
   - name: update-status 
     runAfter:
     - build-backend
     taskRef:
-      name: update-status
+      name: webhook-update-status
     resources:
       inputs:
       - name: image
-        resource: backend-image
+        resource: docker-image
         from:
         - build-backend
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun
 metadata:
-  name: demo-pipeline-run-1
+  name: webhook-pipeline-run-1
 spec:
   serviceAccount: 'default'
   pipelineRef:
-    name: demo-pipeline
+    name: webhook-pipeline
   resources:
-  - name: source-repo
+  - name: git-source
     resourceRef:
-      name: demo-git-source
-  - name: backend-image
+      name: git-source
+  - name: docker-image
     resourceRef:
-      name: backend-image
+      name: docker-image
