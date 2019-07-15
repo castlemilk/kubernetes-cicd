@@ -14,3 +14,4 @@ configMapGenerator:
     - init-scripts/1-products-schema.sql
     - init-scripts/2-ratings-schema.sql
     - init-scripts/3-products-data.sql
+    - init-scripts/4-ratings-data.sql

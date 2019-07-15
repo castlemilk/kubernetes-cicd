@@ -1,5 +1,5 @@
 \connect products;
-INSERT INTO products VALUES (DEFAULT, 'AVACADO', 'Avocado','Fresh and perfectly ripe Avocadoes', 'avocado.png');
+INSERT INTO products VALUES ('52c65bc6-4cc8-484b-afee-e03dfd5ebd12', 'AVACADO', 'Avocado','Fresh and perfectly ripe Avocadoes', 'avocado.png');
 INSERT INTO products VALUES (DEFAULT, 'BACON', 'Bacon','Delicious Bacon, and VERY crispy', 'bacon.png');
 INSERT INTO products VALUES (DEFAULT, 'CARROT', 'Carrot','Carrots, fresh from the farm, great for the eyes', 'carrot.png');
 INSERT INTO products VALUES (DEFAULT, 'CHIPS', 'Chips','Yummy chippies, not too good for you though', 'chips.png');
