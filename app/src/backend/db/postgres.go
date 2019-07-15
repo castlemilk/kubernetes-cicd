@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-
+	// "github.com/lib/pq"
 	// "github.com/go-gorp/gorp"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -50,7 +50,9 @@ func Init() {
 		panic(err)
 	}
 	log.Println("Database connected")
-
+	if !db.HasTable(&models.Product{}) {
+		panic("table not found: products")
+	}
 	db.AutoMigrate(&models.Product{})
 
 }

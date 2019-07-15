@@ -19,6 +19,7 @@ func main() {
     products := v1.Group("/products")
     {
       products.GET("/", ProductController.GetProducts)
+      products.GET("/:id", ProductController.GetProduct)
       products.POST("/", ProductController.CreateProduct)
       // products.PUT("/:id", ProductController.UpdateProduct)
       // products.DELETE("/:id", ProductController.DeleteProduct)
