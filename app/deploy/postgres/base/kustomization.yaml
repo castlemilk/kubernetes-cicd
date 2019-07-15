@@ -1,8 +1,8 @@
 resources:
 - configmap.yaml
 - deployment.yaml
-- pv.yaml
-- pvc.yaml
+# - pv.yaml
+# - pvc.yaml
 - service.yaml
 namespace: default
 commonLabels:

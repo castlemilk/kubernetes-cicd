@@ -4,18 +4,14 @@ build:
   artifacts:
     - image: products-backend
       context: src/backend
-    - image: products-frontend
-      context: src/frontend
+    # - image: products-frontend
+    #   context: src/frontend
   tagPolicy:
     sha256: {}
 deploy:
-  
+
 profiles:
-  - name: cloudbuild
-    build:
-      googleCloudBuild: {}
-  - build:
-      googleCloudBuild:
-        projectId: developer-experience-239709
-    deploy: {}
-    name: non-prod
+  - name: local-development
+    deploy:
+      kustomize:
+          path: deploy/overlays/local

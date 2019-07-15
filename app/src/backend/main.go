@@ -1,32 +1,29 @@
 package main
 
 import (
-	"os"
-	"fmt"
-	"github.com/gin-gonic/gin"
-)
+	// "os"
+	// "fmt"
 
-var (
-	postgresURL				string
-	postgresUsername	string
-	postgresPassword	string
+	"github.com/gin-gonic/gin"
+	"backend/db"
+	ProductController "backend/controllers"
 )
 
 func main() {
 
-	postgresURL := os.Getenv("PRODUCTS_DB_URL")
-	postgresUsername := os.Getenv("PRODUCTS_DB_USERNAME")
-	postgresPassword := os.Getenv("PRODUCTS_DB_PASSWORD")
-	fmt.Printf("Postgres URL: %s\n", postgresURL)
-	fmt.Printf("Postgres Username: %s\n", postgresUsername)
-	fmt.Printf("POstgres Passowrd: %s\n", postgresPassword)
-
-
+	db.Init();
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	r.Run() // listen and serve on 0.0.0.0:8080
+
+	v1 := r.Group("/api/v1")
+	{
+    products := v1.Group("/products")
+    {
+      products.GET("/", ProductController.GetProducts)
+      products.POST("/", ProductController.CreateProduct)
+      // products.PUT("/:id", ProductController.UpdateProduct)
+      // products.DELETE("/:id", ProductController.DeleteProduct)
+    }
+  }
+
+  r.Run()
 }
