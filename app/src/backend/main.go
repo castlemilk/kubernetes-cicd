@@ -1,12 +1,10 @@
 package main
 
 import (
-	// "os"
-	// "fmt"
-
 	"github.com/gin-gonic/gin"
 	"backend/db"
-	ProductController "backend/controllers"
+	ProductController "backend/controllers/products"
+  RatingController "backend/controllers/ratings"
 )
 
 func main() {
@@ -20,10 +18,13 @@ func main() {
     {
       products.GET("/", ProductController.GetProducts)
       products.GET("/:id", ProductController.GetProduct)
-      products.POST("/", ProductController.CreateProduct)
-      // products.PUT("/:id", ProductController.UpdateProduct)
-      // products.DELETE("/:id", ProductController.DeleteProduct)
     }
+    ratings := v1.Group("/ratings")
+    {
+      ratings.GET("/:product_id", RatingController.GetRatings)
+    }
+    images := v1.Group("/images")
+    images.Static("/", "./assets/images")
   }
 
   r.Run()
