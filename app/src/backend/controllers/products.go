@@ -32,7 +32,6 @@ func GetProduct(c *gin.Context) {
 	}
 
 	id, _ := uuid.FromString(uri.ID)
-	fmt.Printf("id: %s\n", id)
 	product := new(models.ProductDetails)
 	db := db.GetDB()
 	if err := db.Table("products").Find(&product, "id = ?", id).Error; err != nil {
