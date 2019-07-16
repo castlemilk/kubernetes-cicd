@@ -31,7 +31,6 @@ func GetRatings(c *gin.Context) {
     return
 	}
 
-  c.BindJSON(&ratings)
   c.JSON(http.StatusOK, &ratings)
 }
 
@@ -55,8 +54,10 @@ func GetRating(c *gin.Context) {
 	
 
 	if err:= c.ShouldBindUri(&uri); err != nil {
-		c.JSON(400, gin.H{"msg": err})
-		return
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+      "error": err.Error(),
+    })
+    return
 	}
 
 	productID, _ := uuid.FromString(uri.ProductID)
@@ -69,6 +70,5 @@ func GetRating(c *gin.Context) {
     c.AbortWithStatus(http.StatusNotFound)
     return
 	}
-  c.BindJSON(&rating)
   c.JSON(http.StatusOK, &rating)
 }
