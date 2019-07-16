@@ -35,32 +35,40 @@ func GetRatings(c *gin.Context) {
   c.JSON(http.StatusOK, &ratings)
 }
 
+func CreateRating(c *gin.Context) {
+  var rating models.Rating
+  var db = db.GetDB()
+
+  if err := c.BindJSON(&rating); err != nil {
+    c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+      "error": err.Error(),
+    })
+    return
+  }
+  db.Create(&rating)
+  c.JSON(http.StatusOK, &rating)
+}
 
 
-// func GetRating(c *gin.Context) {
-// 	var uri Uri
+func GetRating(c *gin.Context) {
+	var uri Uri
 	
 
-// 	if err:= c.ShouldBindUri(&uri); err != nil {
-// 		c.JSON(400, gin.H{"msg": err})
-// 		return
-// 	}
+	if err:= c.ShouldBindUri(&uri); err != nil {
+		c.JSON(400, gin.H{"msg": err})
+		return
+	}
 
-// 	id, _ := uuid.FromString(uri.ID)
-// 	product := new(models.ProductDetails)
-// 	db := db.GetDB()
-// 	if err := db.Table("products").Find(&product, "id = ?", id).Error; err != nil {
-// 		fmt.Printf("no items found!\n")
-//     c.AbortWithStatus(http.StatusNotFound)
-//     return
-// 	}
-//   // if err := db.Model(product).Table("products").Where("id = ?", uri.ID).Select(product).Error; err != nil {
-// 	// 	fmt.Printf("no items found!\n")
-//   //   c.AbortWithStatus(http.StatusNotFound)
-//   //   return
-// 	// }
-// 	fmt.Printf("product.id: %s\n", product.ID)
-// 	spew.Dump(product)
-//   c.BindJSON(&product)
-//   c.JSON(http.StatusOK, &product)
-// }
+	productID, _ := uuid.FromString(uri.ProductID)
+	ratingID, _ := uuid.FromString(uri.RatingID)
+
+	rating := new(models.RatingDetails)
+	db := db.GetDB()
+	if err := db.Table("ratings").Find(&rating, "id = ? AND product_id = ?", ratingID, productID).Error; err != nil {
+		fmt.Printf("no items found!\n")
+    c.AbortWithStatus(http.StatusNotFound)
+    return
+	}
+  c.BindJSON(&rating)
+  c.JSON(http.StatusOK, &rating)
+}

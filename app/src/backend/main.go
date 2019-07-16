@@ -22,6 +22,8 @@ func main() {
     ratings := v1.Group("/ratings")
     {
       ratings.GET("/:product_id", RatingController.GetRatings)
+      ratings.GET("/:product_id/:id", RatingController.GetRating)
+      ratings.POST("/:product_id", RatingController.CreateRating)
     }
     images := v1.Group("/images")
     images.Static("/", "./assets/images")
