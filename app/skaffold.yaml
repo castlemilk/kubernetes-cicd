@@ -12,7 +12,7 @@ build:
   local:
     useDockerCLI: true 
 test:
-  - image: products-backend
+  - image: products-backend:latest
     structureTests:
     - ./src/backend/tests/structure_test.yaml
 deploy:

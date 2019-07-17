@@ -18,25 +18,25 @@ export class ProductClient {
       crossdomain: true
     })
     this.imageRequest = axios.create({
-      baseURL: this.config.informationUri,
+      baseURL: this.config.imagesUri,
       headers: HEADERS_IMG_BASE,
       crossdomain: true
     })
   }
-  listProducts (headers = {}, ver = 'v1', ) {
-    return this.productRequest.get(`${ver}/product/`, {
+  listProducts (headers = {}) {
+    return this.productRequest.get(`/`, {
       headers: { ...HEADERS_JSON_BASE, ...headers},
       crossdomain: true
     });
   }
-  getProduct (id, headers = {}, ver = 'v1') {
-    return this.productRequest.get(`${ver}/product/${id}`, {
+  getProduct (id, headers = {}) {
+    return this.productRequest.get(`/${id}`, {
       headers: { ...HEADERS_JSON_BASE, ...headers, ...{ 'X-product-id': id}},
       crossdomain: true
     })
   }
-  getImage (name, headers = {}, ver = 'v1') {
-    return this.imageRequest.get(`${ver}/image/${name}`, {
+  getImage (name, headers = {}) {
+    return this.imageRequest.get(`/${name}`, {
       headers: { ...HEADERS_JSON_BASE, ...headers},
       crossdomain: true
     })

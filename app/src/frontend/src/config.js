@@ -1,11 +1,11 @@
 import { setConfig } from './lib/utils';
 export const productAPIConfig = (window) => ({
-    productUri: setConfig(window, "PRODUCT_BASE_URI",'https://api.training.local/api/product'),
-    informationUri: setConfig(window,"INFORMATION_BASE_URI",'https://api.training.local/api/information'),
+    productUri: setConfig(window, "PRODUCT_BASE_URI",'http://api.demo.local:8080/api/v1/products'),
+    imagesUri: setConfig(window,"IMAGES_BASE_URI",'http://api.demo.local:8080/api/v1/images'),
 })
 
 export const APIConfig = (window) => ({
-    baseURL: setConfig(window, "API_BASE_URI",'https://api.training.local/api'),
+    baseURL: setConfig(window, "API_BASE_URI",'http://api.training.local:8080/api/v1'),
     apis: {
         product: {
             api: 'product',
@@ -15,23 +15,9 @@ export const APIConfig = (window) => ({
             api: 'rating',
             endpoint: 'rating'
         },
-        information: {
+        images: {
             api: 'information',
             endpoint: 'information'
         },
-        pricing: {
-            api: 'pricing',
-            endpoint: 'price'
-        },
-        auth: {
-            api: 'auth',
-            endpoint: 'auth'
-        }
     }
-})
-export const AuthConfig = (window) => ({
-    clientId: setConfig(window, "AUTH_CLIENT_ID",'training-api'),
-    clientSecret: setConfig(window, "AUTH_CLIENT_SECRET",'123'),
-    grantType: setConfig(window, "AUTH_GRANT_TYPE",'password'),
-
 })
