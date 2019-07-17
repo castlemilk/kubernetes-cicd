@@ -47,6 +47,27 @@ func CreateRating(c *gin.Context) {
   db.Create(&rating)
   c.JSON(http.StatusOK, &rating)
 }
+func DeleteRating(c *gin.Context) {
+	var uri Uri
+  var rating models.Rating
+  var db = db.GetDB()
+
+  if err:= c.ShouldBindUri(&uri); err != nil {
+		c.JSON(400, gin.H{"msg": err})
+		return
+	}
+
+	id, _ := uuid.FromString(uri.RatingID)
+
+	if err := db.Table("ratings").Find(&rating, "id = ?", id).Error; err != nil {
+		fmt.Printf("no items found!\n")
+    c.AbortWithStatus(http.StatusNotFound)
+    return
+	}
+	db.Delete(&rating)
+
+  c.JSON(http.StatusOK, &rating)
+}
 
 
 func GetRating(c *gin.Context) {

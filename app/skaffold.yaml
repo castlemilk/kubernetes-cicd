@@ -7,7 +7,14 @@ build:
     # - image: products-frontend
     #   context: src/frontend
   tagPolicy:
-    sha256: {}
+    envTemplate:
+      template: "{{.IMAGE_NAME}}:latest"
+  local:
+    useDockerCLI: true 
+test:
+  - image: products-backend
+    structureTests:
+    - ./src/backend/tests/structure_test.yaml
 deploy:
 
 profiles:

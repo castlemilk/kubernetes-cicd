@@ -2,12 +2,9 @@ package db
 
 import (
 	"backend/models"
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
-	// "github.com/lib/pq"
-	// "github.com/go-gorp/gorp"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
@@ -17,11 +14,6 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
-}
-
-//DB ...
-type DB struct {
-	*sql.DB
 }
 
 var db *gorm.DB
@@ -56,17 +48,6 @@ func Init() {
 	db.AutoMigrate(&models.Product{})
 
 }
-
-// //ConnectDB ...
-// func ConnectDB(dataSourceName string) (*gorm.DB, error) {
-// 	db, err = sql.Open("postgres", dataSourceName)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	if err = db.Ping(); err != nil {
-// 		return nil, err
-// 	}
-// }
 
 //GetDB ...
 func GetDB() *gorm.DB {

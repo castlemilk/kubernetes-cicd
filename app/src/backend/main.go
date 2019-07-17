@@ -22,6 +22,7 @@ func SetupRouter() *gin.Engine {
 			ratings.GET("/:product_id", RatingController.GetRatings)
 			ratings.GET("/:product_id/:id", RatingController.GetRating)
 			ratings.POST("/:product_id", RatingController.CreateRating)
+			ratings.DELETE("/:id", RatingController.DeleteRating)
 		}
 		images := v1.Group("/images")
 		images.Static("/", "./assets/images")
