@@ -4,13 +4,13 @@ build:
   artifacts:
     - image: products-backend
       context: src/backend
-    # - image: products-frontend
-    #   context: src/frontend
+    - image: products-frontend
+      context: src/frontend
   tagPolicy:
     envTemplate:
       template: "{{.IMAGE_NAME}}:latest"
   local:
-    useDockerCLI: true 
+    useDockerCLI: false 
 test:
   - image: products-backend:latest
     structureTests:

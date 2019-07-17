@@ -4,71 +4,9 @@ import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import IconButton from '@material-ui/core/IconButton';
 import RefreshIcon from '@material-ui/icons/Refresh';
-import { createMuiTheme } from '@material-ui/core/styles';
 import { RequestConsumer } from './request-context';
 import ProductCatalogue from './views/ProductCatalogue';
 import { AppView } from './style';
-
-const theme = createMuiTheme({
-  typography: {
-    useNextVariants: true,
-  },
-  menuStyle: {
-    border: '1px solid white'
-  },
-  notchedOutline: {
-    borderColor: 'white !important',
-  },
-  overrides: {
-    MuiFormLabel: {
-      root: {
-        color: 'white',
-        borderColor: 'white',
-      }
-    },
-    MuiFormControl: {
-      root: {
-        color: 'white',
-        borderColor: 'white',
-      }
-    },
-    MuiPrivateNotchedOutline: {
-      root: {
-        borderColor: 'white !important',
-        borderRadius: 2
-      }
-    },
-    MuiOutlinedInput: {
-      input: {
-        color: 'white',
-        borderColor: 'white'
-      }
-    },
-    MuiSelect: {
-      filled: {
-        color: 'white'
-      },
-      icon: {
-        fill: 'white'
-      },
-    }
-  },
-  palette: {
-    type: 'light',
-    primary: {
-      light: '#ffffff',
-      main: '#ffffff',
-      dark: '#ffffff',
-      contrastText: '#fff',
-    },
-    secondary: {
-      light: '#ffffff',
-      main: '#ffffff',
-      dark: '#ffffff',
-      contrastText: '#000',
-    },
-  },
-});
 
 const styles = theme => ({
   root: {
@@ -111,31 +49,6 @@ const styles = theme => ({
     outline: 'none',
   },
 });
-function getModalStyle() {
-  const top = 15;
-  const left = 50;
-
-  return {
-    top: `${top}%`,
-    left: `${left}%`,
-    transform: `translate(-${left}%, -${top}%)`,
-  };
-}
-function getJWTModalStyle() {
-  const top = 15;
-  const left = 50;
-
-  return {
-    top: `${top}%`,
-    width: '50%',
-    height: '40%',
-    wordBreak: 'break-all',
-    left: `${left}%`,
-    overflowX: 'scroll',
-
-    transform: `translate(-${left}%, -${top}%)`,
-  };
-}
 class App extends React.Component {
   state = {
     left: false,

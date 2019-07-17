@@ -19,6 +19,7 @@ export const RequestContext = React.createContext(defaultRequestState);
 class RequestProvider extends React.Component {
     constructor(props) {
       super(props);
+      console.log(window["__ENV__"])
       this.api_client = new ProductClient(productAPIConfig(window))
       this.api_config = APIConfig(window) 
       this.state = {

@@ -4,6 +4,8 @@ metadata:
   name: products-backend
 spec:
   type: ClusterIP
+  selector:
+    app: products-backend
   ports:
   - port: 8080
     targetPort: http-server

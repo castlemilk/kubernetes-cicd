@@ -3,3 +3,9 @@ resources:
 - service.yaml
 commonLabels:
   tier: backend
+vars:
+- name: POSTGRES_SERVICE
+  objref:
+    kind: Service
+    name: postgres
+    apiVersion: v1

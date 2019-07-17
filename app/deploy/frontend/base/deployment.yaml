@@ -1,0 +1,35 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: products-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: products-frontend
+  template:
+    metadata:
+      labels:
+        app: products-frontend
+      # annotations:
+        # sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+      - name: products-frontend
+        image: products-frontend
+        imagePullPolicy: Never
+        ports:
+        - name: http
+          containerPort: 80
+        volumeMounts:
+          - name: env
+            mountPath: /usr/share/nginx/html/.env
+            subPath: .env
+        resources:
+          limits:
+            memory: '64Mi'
+            cpu: '0'
+      volumes:
+      - name: env
+        configMap:
+          name: webapp-environment-config
