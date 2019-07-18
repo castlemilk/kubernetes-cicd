@@ -26,22 +26,22 @@ class ProductCatalogue extends React.Component {
     }
     componentDidMount() {
         this.props.listProducts()
-        .then(result => this.setState({products: result.data.products}));
+        .then(result => this.setState({products: result.data}));
     }
     componentDidUpdate(prevProps) {
         if (this.props.lastUpdated !== prevProps.lastUpdated && this.state.products.length === 0) {
             this.props.listProducts()
-                .then(result => this.setState({products: result.data.products})); 
+                .then(result => this.setState({products: result.data})); 
         }
     }
     render() {
         const { classes } = this.props;
         return (
         <ProductCatalogueWrapper>{this.state.products ?
-        this.state.products.map(id => 
+        this.state.products.map(({id}) => 
             <ProductCard
                 lastUpdated={this.props.lastUpdated}
-                informationUri={`${productAPIConfig(window).informationUri}/v1`}
+                imagesBaseURL={`${productAPIConfig(window).imagesBaseURL}`}
                 key={id}
                 fetch={this.props.getProduct(id)}
         />) : <CircularProgress className={classes.progress} />}</ProductCatalogueWrapper>)

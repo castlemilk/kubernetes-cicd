@@ -6,20 +6,13 @@ import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import Star from '@material-ui/icons/Star';
 import StarHalf from '@material-ui/icons/StarHalf';
-import ReactCardFlip from 'react-card-flip';
 import { 
     ProductHeader,
     ProductCardWrapper, 
-    ProductCardStockWrapper, 
     ProductImageWrapper, 
     ProductLoadingWrapper, 
     ProductPriceWrapper, 
     ProductRatingWrapper,
-    ProductStockHeader,
-    ProductStockTitle,
-    ProductStockValue,
-    ProductStockRestockTitle,
-    ProductStockRestockValue,
     } from './style';
 const theme = createMuiTheme({
     typography: {
@@ -53,17 +46,6 @@ const styles = {
         useNextVariants: true,
       },
   };
-const stockAvailable = (information) => {
-    if (information.stock) {
-        if (information.stock.id) {
-            return true
-        } else {
-            return false
-        }
-    } else {
-        return false
-    }
-}
 const getColor = (color) => {
     switch(color) {
         case 'red':
@@ -83,15 +65,6 @@ const ProductLoading = (props) => (
     <div className="product-description"></div>
 </ProductLoadingWrapper>
 </Card>)
-const ProductPrice = (props) => {
-    if (props.price >= 1.00) {
-        return (<ProductPriceWrapper>{`${props.price}﹩`}</ProductPriceWrapper>)
-    } else {
-        return (<ProductPriceWrapper>{`${props.price * 100}¢`}</ProductPriceWrapper>)
-    }
-    
-
-}
 const ProductRating = (props) => {
     const color = getColor(props.color)
     const { rating, id } = props;
@@ -112,16 +85,12 @@ class ProductCard extends React.Component {
             loading: true,
             imageUri: '',
         }
-        this.handleClick = this.handleClick.bind(this);
-    }
-    handleClick(e) {
-        e.preventDefault();
-        this.setState(prevState => ({ isFlipped: !prevState.isFlipped }));
     }
     componentDidMount() {
         this.props.fetch
             .then(result => this.setState({ data: result.data,
-                imageUri: `${this.props.informationUri}/image/${result.data.information.image}${new Date()}` }))
+                imageUri: `${this.props.imagesBaseURL}/${result.data.image_url}?${new Date()}` }))
+        console.log(this.state.data)
     }
     componentWillReceiveProps(nextProps) {
         if(this.props.version !== nextProps.version) {
@@ -129,13 +98,13 @@ class ProductCard extends React.Component {
             .then(result => this.setState({
                 loading: true,
                 data: result.data,
-                imageUri: `${this.props.informationUri}/image/${result.data.information.image}${new Date()}` }))
+                imageUri: `${this.props.imagesBaseURL}/${result.data.image_url}?${new Date()}` }))
         } else if (this.props.lastUpdated !== nextProps.lastUpdated ) {
             nextProps.fetch
             .then(result => this.setState({
                 loading: true,
                 data: result.data,
-                imageUri: `${this.props.informationUri}/image/${result.data.information.image}${new Date()}` }))
+                imageUri: `${this.props.imagesBaseURL}/${result.data.image_url}?${new Date()}` }))
         }
     }
     handleImageLoaded() {
@@ -145,7 +114,6 @@ class ProductCard extends React.Component {
     render() {
         const { classes, id } = this.props;
         const productImage = this.state.data ? <ProductImage onLoad={() => this.handleImageLoaded()} url={this.state.imageUri} /> : null
-        const productPrice = this.state.data ? (this.state.data.price ? <ProductPrice price={this.state.data.price.amount} /> : null) : null;
         const productRating = this.state.data ? (this.state.data.rating ? <ProductRating color={this.state.data.rating.color} id={id} rating={this.state.data.rating.average} /> : null) : null;
         const productLoading = (<div><ProductLoading classes={classes}/><div style={{ display: 'none'}}>{productImage}</div></div>)
         const productCard = (this.state.data ?
@@ -153,42 +121,18 @@ class ProductCard extends React.Component {
             <CardContent>
             <ProductHeader>
                 {productImage}
-                {productPrice}
             </ProductHeader>
             <Typography gutterBottom variant="headline" component="h2">
-                {this.state.data.information.name}
+                {this.state.data.title}
             </Typography>
             <Typography component="p">
-                {this.state.data.information.description}
+                {this.state.data.description}
             </Typography>
                 {productRating}
             </CardContent>
         </Card> : null)
-        const productStockCard = this.state.data ? (this.state.data.information.stock ? 
-        <Card className={classes.card}>
-            <CardContent>
-            <ProductStockHeader>
-            Admin Information 
-            </ProductStockHeader>
-            <ProductStockTitle>
-                Stock
-            </ProductStockTitle>
-            <ProductStockValue>
-                {this.state.data.information.stock.stock}
-            </ProductStockValue>
-            <ProductStockRestockTitle>
-                Restock Estimate
-            </ProductStockRestockTitle>
-            <ProductStockRestockValue>
-            {`${this.state.data.information.stock.restockEstimate} days`}
-            </ProductStockRestockValue>
-            </CardContent>
-        </Card> : null) : null
         return (
-            <ReactCardFlip isFlipped={this.state.isFlipped}>
-                <ProductCardWrapper key="front" onClick={this.state.data ? stockAvailable(this.state.data.information) ? this.handleClick : null : null}>{this.state.loading ? productLoading : productCard}</ProductCardWrapper>
-                <ProductCardStockWrapper key="back" onClick={this.handleClick}>{this.state.loading ? productLoading : productStockCard}</ProductCardStockWrapper>
-            </ReactCardFlip>
+            <ProductCardWrapper key="front">{this.state.loading ? productLoading : productCard}</ProductCardWrapper>
         )
     }
 }

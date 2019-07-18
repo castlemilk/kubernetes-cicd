@@ -10,9 +10,9 @@ import (
 
 func GetProducts(c *gin.Context) {
 
-  var products []models.Product
+  var products []models.ProductDetails
   db := db.GetDB()
-  db.Find(&products)
+  db.Table("products").Find(&products)
   c.JSON(200, products)
   return
 }

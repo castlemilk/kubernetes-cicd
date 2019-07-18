@@ -13,12 +13,12 @@ export class ProductClient {
   constructor (config) {
     this.config = config
     this.productRequest = axios.create({
-      baseURL: this.config.productUri,
+      baseURL: this.config.productsBaseURL,
       headers: HEADERS_JSON_BASE,
       crossdomain: true
     })
     this.imageRequest = axios.create({
-      baseURL: this.config.imagesUri,
+      baseURL: this.config.imagesBaseURL,
       headers: HEADERS_IMG_BASE,
       crossdomain: true
     })
@@ -31,7 +31,7 @@ export class ProductClient {
   }
   getProduct (id, headers = {}) {
     return this.productRequest.get(`/${id}`, {
-      headers: { ...HEADERS_JSON_BASE, ...headers, ...{ 'X-product-id': id}},
+      headers: { ...HEADERS_JSON_BASE, ...headers, },
       crossdomain: true
     })
   }

@@ -6,6 +6,6 @@ INSERT INTO products VALUES (DEFAULT, 'CHIPS', 'Chips','Yummy chippies, not too 
 INSERT INTO products VALUES (DEFAULT, 'EGGPLANT', 'Eggplant','Eggplant, part of the nightshade group', 'eggplant.png');
 INSERT INTO products VALUES (DEFAULT, 'EGGS', 'Eggs','Sunny side up, just the way you may like them', 'eggs.png');
 INSERT INTO products VALUES (DEFAULT, 'GRAPES', 'Grapes','Fresh Grapes, ensure to wash pre-use', 'grapes.png');
-INSERT INTO products VALUES (DEFAULT, 'CRAB', 'Crab','Crabs from the atlantic coast', 'crab.png');
+INSERT INTO products VALUES (DEFAULT, 'CRAB', 'Crab','Crabs from the atlantic coast', 'crabs.png');
 INSERT INTO products VALUES (DEFAULT, 'HOT_DOG', 'Hot Dog','Hot Dog or not? Lorem ipsum dolor sit amet', 'hotdog.png');
 INSERT INTO products VALUES (DEFAULT, 'CHICKEN', 'Chicken','Drumstick -  no mel stet mollis aliquip', 'chicken.png');
