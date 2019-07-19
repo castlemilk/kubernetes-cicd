@@ -17,8 +17,8 @@ RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
 # base image for running our microservice
 FROM alpine:3.10.1
 WORKDIR /app
-COPY --from=builder /backend/backend ./backend
-COPY assets ./assets
+COPY --from=builder /backend/backend ./
+COPY assets ./
 ENTRYPOINT ["./backend"]
 # Document that the service listens on port 8080.
 EXPOSE 8080
