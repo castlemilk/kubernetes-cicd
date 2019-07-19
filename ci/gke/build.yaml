@@ -5,8 +5,8 @@ metadata:
 spec:
   type: git
   params:
-  # - name: revision
-  #   value: master
+  - name: revision
+    value: master
   - name: url
     value: https://github.com/castlemilk/kubernetes-cicd
 ---
@@ -61,7 +61,7 @@ spec:
     command:
     - echo
     args:
-    - "pass"
+    - "${input.resources.image.revision}"
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: Task
@@ -151,9 +151,9 @@ spec:
       - name: destinationRegistry
         value: ${params.docker-registry}
       - name: pathToDockerFile
-        value: /workspace/workspace/app/backend/Dockerfile
+        value: /workspace/workspace/app/src/backend/Dockerfile
       - name: pathToContext
-        value: /workspace/workspace/app/backend
+        value: /workspace/workspace/app/src/backend
     resources:
       inputs:
       - name: workspace
@@ -161,17 +161,17 @@ spec:
       outputs:
       - name: builtImage
         resource: docker-image
-  # - name: update-status 
-  #   runAfter:
-  #   - build-backend
-  #   taskRef:
-  #     name: update-status
-  #   resources:
-  #     inputs:
-  #     - name: image
-  #       resource: backend-image
-  #       from:
-  #       - build-backend
+  - name: update-status 
+    runAfter:
+    - build-backend
+    taskRef:
+      name: update-status
+    resources:
+      inputs:
+      - name: image
+        resource: docker-image
+        from:
+        - build-backend
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun

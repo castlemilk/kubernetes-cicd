@@ -118,6 +118,10 @@ gke.tekton.install:
 
 gke.pipeline.create:
 	sed 's/_PROJECT_ID/${PROJECT_ID}/g' ci/gke/build.yaml | kubectl apply -n tekton-pipelines -f -
+gke.pipeline.restart:
+	kubectl delete -f ci/gke/build.yaml --ignore-not-found=true
+	sed 's/_PROJECT_ID/${PROJECT_ID}/g' ci/gke/build.yaml | kubectl apply -n tekton-pipelines -f -
+
 local.tekton-dashboard.install:
 	@mkdir -p $$GOPATH/src/github.com/tektoncd/
 	@if [ ! -d $$GOPATH/src/github.com/tektoncd/dashboard ]; then \

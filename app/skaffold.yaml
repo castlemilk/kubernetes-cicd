@@ -26,15 +26,6 @@ profiles:
       kustomize:
           path: deploy/overlays/non-prod
   - name: non-production
-    build:
-    artifacts:
-      - image: gcr.ioproducts-backend
-        context: src/backend
-      - image: products-frontend
-        context: src/frontend
-    tagPolicy:
-      envTemplate:
-        template: "{{.IMAGE_NAME}}:latest"
     deploy:
       kustomize:
           path: deploy/overlays/non-prod
