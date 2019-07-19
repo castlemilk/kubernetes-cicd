@@ -1,0 +1,24 @@
+apiVersion: skaffold/v1beta6
+kind: Config
+build:
+  artifacts:
+    - image: products-backend
+      context: src/backend
+    - image: products-frontend
+      context: src/frontend
+  tagPolicy:
+    envTemplate:
+      template: "{{.IMAGE_NAME}}:latest"
+  local:
+    useDockerCLI: false 
+test:
+  - image: products-backend:latest
+    structureTests:
+    - ./src/backend/tests/structure_test.yaml
+deploy: {}
+
+profiles:
+  - name: local-development
+    deploy:
+      kustomize:
+          path: deploy/overlays/local

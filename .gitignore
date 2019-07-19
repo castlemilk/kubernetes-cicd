@@ -2,4 +2,5 @@
 .vscode
 .idea
 istio-1.*
+app/src/backend/backend
 github-secret.yaml

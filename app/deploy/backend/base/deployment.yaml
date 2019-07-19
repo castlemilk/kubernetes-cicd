@@ -1,0 +1,28 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: products-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: products-backend
+  template:
+    metadata:
+      labels:
+        app: products-backend
+    spec:
+      containers:
+      - name: products-backend 
+        image: products-backend
+        imagePullPolicy: Never
+        ports:
+        - name: http-server
+          containerPort: 8080
+        - name: debug
+          containerPort: 3000
+        env:
+        - name: PORT
+          value: "8080"
+        - name: PG_HOST 
+          value: $(POSTGRES_SERVICE)

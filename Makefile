@@ -13,6 +13,7 @@ KNATIVE_VERSION=0.6.1
 BASE_ZONE=cicd.benebsworth.com
 DEFAULT_ZONE=default.cicd.benebsworth.com
 TEKTON_ZONE=tekton-pipelines.cicd.benebsworth.com
+TEKTON_PIPELINE_VERSION=v0.5.2
 
 define wait_for_deployment
 	@printf "🌀 waiting for deployment $(2) to complete"; 
@@ -60,9 +61,10 @@ gke.cluster.get-credentials:
 	gcloud container clusters get-credentials kubernetes-cicd
 ## scale down cluster to 0, effectively pause mode
 gke.cluster.pause:
-	time gcloud container clusters resize kubernetes-cicd --num-nodes 0
+	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 0
 gke.cluster.unpause:
-	time gcloud container clusters resize kubernetes-cicd --num-nodes 3
+	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 3
+	gcloud container clusters get-credentials kubernetes-cicd
 gke.cluster.delete:
 	gcloud beta container clusters delete kubernetes-cicd --zone="australia-southeast1-a"
 ## configure DNS settings for IP assigned to ingress-gateway
@@ -72,12 +74,12 @@ gke.dns.update:
 	@gcloud dns managed-zones create tekton-namespace --no-user-output-enabled --dns-name ${TEKTON_ZONE} --description="tekton namespace zone" > /dev/null 2>&1 || echo " ✅  tekton zone ${TEKTON_ZONE} already exists"
 	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
 	gcloud dns record-sets transaction start --zone="default-namespace"; \
-	gcloud dns record-sets transaction add $$GATEWAY_IP. --name "*.${DEFAULT_ZONE}" --ttl=5 --type=CNAME --zone="default-namespace"; \
+	gcloud dns record-sets transaction add $$GATEWAY_IP. --name "*.${DEFAULT_ZONE}" --ttl=5 --type=A --zone="default-namespace"; \
 	gcloud dns record-sets transaction execute --zone="default-namespace" > /dev/null 2>&1 || echo " ✅   recordsets for ${DEFAULT_ZONE} already exists" 
 	rm -rf transaction.yaml
 	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
 	gcloud dns record-sets transaction start --zone="tekton-namespace"; \
-	gcloud dns record-sets transaction add $$GATEWAY_IP. --name "*.${TEKTON_ZONE}" --ttl=5 --type=CNAME --zone="tekton-namespace"; \
+	gcloud dns record-sets transaction add $$GATEWAY_IP. --name "*.${TEKTON_ZONE}" --ttl=5 --type=A --zone="tekton-namespace"; \
 	gcloud dns record-sets transaction execute --zone="tekton-namespace" || echo " ✅   recordsets for ${TEKTON_ZONE} already exists" 
 
 local.cluster.patch:
@@ -112,7 +114,7 @@ local.tekton.install:
 	kubectl apply -f https://storage.googleapis.com/tekton-releases/latest/release.yaml
 	
 gke.tekton.install:
-	kubectl apply -f https://storage.googleapis.com/tekton-releases/latest/release.yaml
+	kubectl apply -f https://github.com/tektoncd/pipeline/releases/download/${TEKTON_PIPELINE_VERSION}/release.yaml
 
 gke.pipeline.create:
 	sed 's/_PROJECT_ID/${PROJECT_ID}/g' ci/gke/build.yaml | kubectl apply -n tekton-pipelines -f -
@@ -121,7 +123,7 @@ local.tekton-dashboard.install:
 	@if [ ! -d $$GOPATH/src/github.com/tektoncd/dashboard ]; then \
 		cd $$GOPATH/src/github.com/tektoncd; git clone git@github.com:tektoncd/dashboard.git; \
 	fi
-	cd $$GOPATH/src/github.com/tektoncd/dashboard; kubectl apply -f config/release/gcr-tekton-dashboard.yaml
+	cd $$GOPATH/src/github.com/tektoncd/dashboard; git pull; kubectl apply -f config/release/gcr-tekton-dashboard.yaml
 	
 
 gke.tekton-dashboard.install:
@@ -129,7 +131,7 @@ gke.tekton-dashboard.install:
 	@if [ ! -d $$GOPATH/src/github.com/tektoncd/dashboard ]; then \
 		cd $$GOPATH/src/github.com/tektoncd; git clone git@github.com:tektoncd/dashboard.git; \
 	fi
-	cd $$GOPATH/src/github.com/tektoncd/dashboard; kubectl apply -f config/release/gcr-tekton-dashboard.yaml
+	cd $$GOPATH/src/github.com/tektoncd/dashboard; git pull; kubectl apply -f config/release/gcr-tekton-dashboard.yaml
 	kubectl apply -f deploy/resources/tekton-dashboard/
 local.tekton-listener.install:
 	@mkdir -p $$GOPATH/src/github.com/tektoncd
@@ -143,8 +145,8 @@ local.tekton-webhook.install:
 	@if [ ! -d $$GOPATH/src/github.com/tektoncd/experimental/tekton-listener ]; then \
 		cd $$GOPATH/src/github.com/tektoncd; git clone git@github.com:tektoncd/experimental.git; \
 	fi
-	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; kubectl delete --ignore-not-found=true -f config/release/gcr-tekton-webhooks-extension.yaml
-	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; kubectl apply -f config/release/gcr-tekton-webhooks-extension.yaml
+	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; git pull; kubectl delete --ignore-not-found=true -f config/release/gcr-tekton-webhooks-extension.yaml
+	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; git pull; kubectl apply -f config/release/gcr-tekton-webhooks-extension.yaml
 	kubectl delete pod -l app=tekton-dashboard -n tekton-pipelines
 	@kubectl patch svc -n tekton-pipelines webhooks-extension --type='json' -p='[{"op": "replace", "path": "/metadata/annotations/tekton-dashboard-bundle-location", "value": "web/extension.c526c42e.js" }]'
 
@@ -154,9 +156,13 @@ gke.tekton-webhook.install:
 		cd $$GOPATH/src/github.com/tektoncd; git clone git@github.com:tektoncd/experimental.git; \
 	fi
 	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; kubectl delete --ignore-not-found=true -f config/release/gcr-tekton-webhooks-extension.yaml
-	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; kubectl apply -f config/release/gcr-tekton-webhooks-extension.yaml
+	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; git pull; kubectl apply -f config/release/gcr-tekton-webhooks-extension.yaml
 	kubectl delete pod -l app=tekton-dashboard -n tekton-pipelines
-	@kubectl patch svc -n tekton-pipelines webhooks-extension --type='json' -p='[{"op": "replace", "path": "/metadata/annotations/tekton-dashboard-bundle-location", "value": "web/extension.c526c42e.js" }]'
+	@kubectl patch svc -n tekton-pipelines webhooks-extension --type='json' -p='[{"op": "replace", "path": "/metadata/annotations/tekton-dashboard-bundle-location", "value": "web/extension.8fc66494.js" }]'
+	kubectl apply -f https://raw.githubusercontent.com/tektoncd/experimental/master/webhooks-extension/config/extension-service.yaml -n tekton-pipelines
+gke.tekton-webhook.update:
+	# @kubectl patch svc -n tekton-pipelines webhooks-extension --type='json' -p='[{"op": "replace", "path": "/metadata/annotations/tekton-dashboard-bundle-location", "value": "web/extension.8fc66494.js" }]'
+	kubectl apply -f https://raw.githubusercontent.com/tektoncd/experimental/master/webhooks-extension/config/extension-service.yaml -n tekton-pipelines
 local.knative.install:
 	@if [ "${KNATIVE_VERSION}" == "0.7.1" ]; then \
 		kubectl apply --selector knative.dev/crd-install=true \

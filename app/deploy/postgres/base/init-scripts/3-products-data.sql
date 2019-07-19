@@ -1,0 +1,11 @@
+\connect products;
+INSERT INTO products VALUES ('52c65bc6-4cc8-484b-afee-e03dfd5ebd12', 'AVACADO', 'Avocado','Fresh and perfectly ripe Avocadoes', 'avocado.png');
+INSERT INTO products VALUES (DEFAULT, 'BACON', 'Bacon','Delicious Bacon, and VERY crispy', 'bacon.png');
+INSERT INTO products VALUES (DEFAULT, 'CARROT', 'Carrot','Carrots, fresh from the farm, great for the eyes', 'carrot.png');
+INSERT INTO products VALUES (DEFAULT, 'CHIPS', 'Chips','Yummy chippies, not too good for you though', 'chips.png');
+INSERT INTO products VALUES (DEFAULT, 'EGGPLANT', 'Eggplant','Eggplant, part of the nightshade group', 'eggplant.png');
+INSERT INTO products VALUES (DEFAULT, 'EGGS', 'Eggs','Sunny side up, just the way you may like them', 'eggs.png');
+INSERT INTO products VALUES (DEFAULT, 'GRAPES', 'Grapes','Fresh Grapes, ensure to wash pre-use', 'grapes.png');
+INSERT INTO products VALUES (DEFAULT, 'CRAB', 'Crab','Crabs from the atlantic coast', 'crabs.png');
+INSERT INTO products VALUES (DEFAULT, 'HOT_DOG', 'Hot Dog','Hot Dog or not? Lorem ipsum dolor sit amet', 'hotdog.png');
+INSERT INTO products VALUES (DEFAULT, 'CHICKEN', 'Chicken','Drumstick -  no mel stet mollis aliquip', 'chicken.png');

@@ -1,0 +1,125 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  creationTimestamp: "2019-07-19T09:21:36Z"
+  generation: 1
+  name: kubernetes-cicd-git-source-1563528096
+  namespace: tekton-pipelines
+  resourceVersion: "2943624"
+  selfLink: /apis/tekton.dev/v1alpha1/namespaces/tekton-pipelines/pipelineresources/kubernetes-cicd-git-source-1563528096
+  uid: 9ba78b90-aa06-11e9-a80c-42010a98008b
+spec:
+  params:
+  - name: revision
+    value: 236e6bdec548afa795ae8b78f44e1205f0ee4f22
+  - name: url
+    value: https://github.com/castlemilk/kubernetes-cicd
+  type: git
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  creationTimestamp: "2019-07-19T09:21:36Z"
+  generation: 1
+  name: kubernetes-cicd-docker-image-1563528096
+  namespace: tekton-pipelines
+  resourceVersion: "2943623"
+  selfLink: /apis/tekton.dev/v1alpha1/namespaces/tekton-pipelines/pipelineresources/kubernetes-cicd-docker-image-1563528096
+  uid: 9ba5b97d-aa06-11e9-a80c-42010a98008b
+spec:
+  params:
+  - name: url
+    value: gcr.io/kubernetes-cicd-246207/demo/kubernetes-cicd:236e6bd
+  type: image
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: webhook-pipeline
+spec:
+  params:
+    - name: image-tag
+      description: tag associated with trigger event (maps to a commit SHA)
+      default: latest
+    - name: image-name
+      description: name of the given image to build (not used for mono-repo)
+      default: gcr.io/kubernetes-cicd-246207/demo/kubernetes-cicd
+    - name: release-name
+      description: name of the release if found
+      default: kubernetes-cicd
+    - name: repository-name
+      description: name of the repository that the webhook corresponds to
+      default: kubernetes-cicd
+    - name: target-namespace
+      description: namespace to deploy workloads to
+      default: tekton-pipelines
+    - name: docker-registry
+      description: docker registry base path
+      default: gcr.io/kubernetes-cicd-246207/demo
+  resources:
+  - name: git-source
+    type: git
+  - name: docker-image
+    type: image
+  tasks:
+  - name: build-backend 
+    taskRef:
+      name: webhook-build-push
+    params:
+      - name: pathToDockerFile
+        value: /workspace/workspace/app/backend/Dockerfile
+      - name: pathToContext
+        value: /workspace/workspace/app/backend
+    resources:
+      inputs:
+      - name: workspace
+        resource: git-source 
+      outputs:
+      - name: builtImage
+        resource: docker-image
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineRun
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"tekton.dev/v1alpha1","kind":"Pipeline","metadata":{"annotations":{},"name":"demo-pipeline","namespace":"tekton-pipelines"},"spec":{"resources":[{"name":"git-source","type":"git"},{"name":"docker-image","type":"image"}],"tasks":[{"name":"build-backend","params":[{"name":"pathToDockerFile","value":"/workspace/workspace/app/backend/Dockerfile"},{"name":"pathToContext","value":"/workspace/workspace/app/backend"}],"resources":{"inputs":[{"name":"workspace","resource":"git-source"}],"outputs":[{"name":"builtImage","resource":"docker-image"}]},"taskRef":{"name":"build-push"}},{"name":"update-status","resources":{"inputs":[{"from":["build-backend"],"name":"image","resource":"docker-image"}]},"runAfter":["build-backend"],"taskRef":{"name":"update-status"}}]}}
+  creationTimestamp: "2019-07-19T09:21:36Z"
+  generation: 1
+  labels:
+    app: tekton-webhook-handler
+    gitBranch: ""
+    gitOrg: castlemilk
+    gitRepo: kubernetes-cicd
+    gitServer: github.com
+    tekton.dev/pipeline: demo-pipeline
+  name: kubernetes-cicd-1563528096
+  namespace: tekton-pipelines
+  resourceVersion: "2943627"
+  selfLink: /apis/tekton.dev/v1alpha1/namespaces/tekton-pipelines/pipelineruns/kubernetes-cicd-1563528096
+  uid: 9ba921d7-aa06-11e9-a80c-42010a98008b
+spec:
+  params:
+  - name: image-tag
+    value: 236e6bd
+  - name: image-name
+    value: gcr.io/kubernetes-cicd-246207/demo/kubernetes-cicd
+  - name: release-name
+    value: kubernetes-cicd
+  - name: repository-name
+    value: kubernetes-cicd
+  - name: target-namespace
+    value: tekton-pipelines
+  - name: docker-registry
+    value: gcr.io/kubernetes-cicd-246207/demo
+  pipelineRef:
+    name: webhook-pipeline
+  resources:
+  - name: docker-image
+    resourceRef:
+      name: kubernetes-cicd-docker-image-1563528096
+  - name: git-source
+    resourceRef:
+      name: kubernetes-cicd-git-source-1563528096
+  serviceAccount: default
+  timeout: 1h0m0s

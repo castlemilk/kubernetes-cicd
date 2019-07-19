@@ -10,6 +10,16 @@ spec:
   - name: url
     value: https://github.com/castlemilk/kubernetes-cicd
 ---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: docker-image 
+spec:
+  type: image
+  params:
+  - name: url
+    value: gcr.io/kubernetes-cicd-246207/demo/backend
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -23,30 +33,10 @@ roleRef:
   name: cluster-admin
   apiGroup: rbac.authorization.k8s.io
 ---
-# apiVersion: tekton.dev/v1alpha1
-# kind: PipelineResource
-# metadata:
-#   name: frontend-image
-# spec:
-#   type: image
-#   params:
-#     - name: url
-#       value: gcr.io/_PROJECT_ID/demo/frontend
----
-apiVersion: tekton.dev/v1alpha1
-kind: PipelineResource
-metadata:
-  name: docker-image
-spec:
-  type: image
-  params:
-  - name: url
-    value: gcr.io/_PROJECT_ID/demo/backend
----
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: update-status
+  name: webhook-update-status
 spec:
   inputs:
     resources:
@@ -73,9 +63,6 @@ spec:
       - name: workspace
         type: git
     params:
-      - name: appName
-        description: name of the app being build
-        default: demo-app
       - name: pathToDockerFile
         description: The path to the dockerfile to build
         default: /workspace/workspace/Dockerfile
@@ -84,12 +71,6 @@ spec:
           The build context used by Kaniko
           (https://github.com/GoogleContainerTools/kaniko#kaniko-build-contexts)
         default: /workspace/workspace
-      - name: imageTag
-        description: tag for the given build artifact
-        default: latest
-      - name: destinationRegistry
-        description: The registry to store the given build artifact
-        default: gcr.io/kubernetes-cicd-246207/demo/default
   outputs:
     resources:
       - name: builtImage
@@ -104,36 +85,17 @@ spec:
       - /kaniko/executor
     args:
       - --dockerfile=${inputs.params.pathToDockerFile}
-      - --destination=${inputs.params.destinationRegistry}/${inputs.params.appName}:${inputs.params.imageTag}
+      - --destination=${outputs.resources.builtImage.url}
       - --context=${inputs.params.pathToContext}
       - --cache=true
-      - --cache-repo=${inputs.params.destinationRegistry}/${inputs.params.appName}
+      - --cache-repo=${outputs.resources.builtImage.url}
       - --insecure
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
-  name: cicd-pipeline
+  name: webhook-pipeline
 spec:
-  params:
-    - name: image-tag
-      description: tag associated with trigger event (maps to a commit SHA)
-      default: latest
-    - name: image-name
-      description: name of the given image to build (not used for mono-repo)
-      default: gcr.io/kubernetes-cicd-246207/demo/kubernetes-cicd
-    - name: release-name
-      description: name of the release if found
-      default: kubernetes-cicd
-    - name: repository-name
-      description: name of the repository that the webhook corresponds to
-      default: kubernetes-cicd
-    - name: target-namespace
-      description: namespace to deploy workloads to
-      default: tekton-pipelines
-    - name: docker-registry
-      description: docker registry base path
-      default: gcr.io/kubernetes-cicd-246207/demo
   resources:
   - name: git-source
     type: git
@@ -144,12 +106,6 @@ spec:
     taskRef:
       name: webhook-build-push
     params:
-      - name: appName
-        value: backend
-      - name: imageTag
-        value: ${params.image-tag}
-      - name: destinationRegistry
-        value: ${params.docker-registry}
       - name: pathToDockerFile
         value: /workspace/workspace/app/backend/Dockerfile
       - name: pathToContext
@@ -165,22 +121,22 @@ spec:
   #   runAfter:
   #   - build-backend
   #   taskRef:
-  #     name: update-status
+  #     name: webhook-update-status
   #   resources:
   #     inputs:
   #     - name: image
-  #       resource: backend-image
+  #       resource: docker-image
   #       from:
   #       - build-backend
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun
 metadata:
-  name: cicd-pipeline-run-1
+  name: webhook-pipeline-run-1
 spec:
   serviceAccount: 'default'
   pipelineRef:
-    name: cicd-pipeline
+    name: webhook-pipeline
   resources:
   - name: git-source
     resourceRef:

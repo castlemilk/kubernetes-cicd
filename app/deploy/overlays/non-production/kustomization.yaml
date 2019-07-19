@@ -1,0 +1,6 @@
+bases:
+- ../../backend/base
+- ../../backend/istio
+- ../../frontend/base
+- ../../frontend/istio
+- ../../postgres/overlays/non-prod
