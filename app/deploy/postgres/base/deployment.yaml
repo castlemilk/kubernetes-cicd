@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   name: postgres
@@ -15,6 +15,7 @@ spec:
           imagePullPolicy: "IfNotPresent"
           ports:
             - containerPort: 5432
+              name: tcp-postgres
           envFrom:
             - configMapRef:
                 name: postgres-config

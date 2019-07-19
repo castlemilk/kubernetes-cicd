@@ -1,6 +1,14 @@
 bases:
-- ../../backend/base
-- ../../backend/istio
-- ../../frontend/base
-- ../../frontend/istio
+- ../../backend/overlays/non-prod
+- ../../frontend/overlays/non-prod
 - ../../postgres/overlays/non-prod
+namespace: default
+commonAnnotations:
+  context: demo-app
+images:
+  - name: products-backend
+    newName: gcr.io/kubernetes-cicd-246207/demo/backend
+    newTag: latest 
+  - name: products-frontend
+    newName: gcr.io/kubernetes-cicd-246207/demo/frontend
+    newTag: latest 
