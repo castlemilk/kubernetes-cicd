@@ -4,3 +4,28 @@ bases:
 - ../../frontend/base
 - ../../frontend/istio
 - ../../postgres/overlays/non-prod
+patchesJson6902:
+- target:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: VirtualService
+    name: backend
+  path: patch_backend_virtualservice.yaml
+- target:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: VirtualService
+    name: frontend
+  path: patch_frontend_virtualservice.yaml
+- target:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: Gateway
+    name: backend
+  path: patch_backend_gateway.yaml
+- target:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: Gateway
+    name: frontend 
+  path: patch_frontend_gateway.yaml

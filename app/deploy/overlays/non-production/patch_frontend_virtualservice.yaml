@@ -1,0 +1,3 @@
+- op: replace
+  path: /spec/hosts/0
+  value: products.tekton-pipelines.cicd.benebsworth.com

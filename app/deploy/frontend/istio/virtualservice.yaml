@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: frontend 
+  namespace: default 
+spec:
+  hosts:
+  - products.demo.local
+  gateways:
+  - frontend 
+  http:
+  - route:
+    - destination:
+        host: frontend 

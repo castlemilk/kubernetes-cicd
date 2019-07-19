@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: backend 
+  namespace: default 
+spec:
+  hosts:
+  - api.demo.local
+  gateways:
+  - backend 
+  http:
+  - route:
+    - destination:
+        host: backend 
+    corsPolicy:
+      allowOrigin:
+      - http://products.demo.local
+      allowMethods:
+      - GET
+      - POST
