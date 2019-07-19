@@ -15,7 +15,7 @@ test:
   - image: products-backend:latest
     structureTests:
     - ./src/backend/tests/structure_test.yaml
-deploy:
+deploy: {}
 
 profiles:
   - name: local-development

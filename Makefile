@@ -13,7 +13,7 @@ KNATIVE_VERSION=0.6.1
 BASE_ZONE=cicd.benebsworth.com
 DEFAULT_ZONE=default.cicd.benebsworth.com
 TEKTON_ZONE=tekton-pipelines.cicd.benebsworth.com
-TEKTON_PIPELINE_VERSION=v0.5.0
+TEKTON_PIPELINE_VERSION=v0.5.2
 
 define wait_for_deployment
 	@printf "🌀 waiting for deployment $(2) to complete"; 
@@ -64,6 +64,7 @@ gke.cluster.pause:
 	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 0
 gke.cluster.unpause:
 	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 3
+	gcloud container clusters get-credentials kubernetes-cicd
 gke.cluster.delete:
 	gcloud beta container clusters delete kubernetes-cicd --zone="australia-southeast1-a"
 ## configure DNS settings for IP assigned to ingress-gateway

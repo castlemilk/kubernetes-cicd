@@ -129,17 +129,17 @@ spec:
       outputs:
       - name: builtImage
         resource: backend-image
-  - name: update-status 
-    runAfter:
-    - build-backend
-    taskRef:
-      name: update-status
-    resources:
-      inputs:
-      - name: image
-        resource: backend-image
-        from:
-        - build-backend
+  # - name: update-status 
+  #   runAfter:
+  #   - build-backend
+  #   taskRef:
+  #     name: update-status
+  #   resources:
+  #     inputs:
+  #     - name: image
+  #       resource: backend-image
+  #       from:
+  #       - build-backend
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun

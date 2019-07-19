@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: products-frontend
 spec:
-  type: ClusterIP
+  type: ClusterIP 
   selector:
     app: products-frontend
   ports:
