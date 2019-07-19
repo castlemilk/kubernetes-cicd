@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
-  name: demo-git-source
+  name: git-source
 spec:
   type: git
   params:
@@ -36,7 +36,7 @@ roleRef:
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
-  name: backend-image
+  name: docker-image
 spec:
   type: image
   params:
@@ -66,13 +66,16 @@ spec:
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: build-push
+  name: webhook-build-push
 spec:
   inputs:
     resources:
       - name: workspace
         type: git
     params:
+      - name: appName
+        description: name of the app being build
+        default: demo-app
       - name: pathToDockerFile
         description: The path to the dockerfile to build
         default: /workspace/workspace/Dockerfile
@@ -81,6 +84,12 @@ spec:
           The build context used by Kaniko
           (https://github.com/GoogleContainerTools/kaniko#kaniko-build-contexts)
         default: /workspace/workspace
+      - name: imageTag
+        description: tag for the given build artifact
+        default: latest
+      - name: destinationRegistry
+        description: The registry to store the given build artifact
+        default: gcr.io/kubernetes-cicd-246207/demo/default
   outputs:
     resources:
       - name: builtImage
@@ -95,29 +104,52 @@ spec:
       - /kaniko/executor
     args:
       - --dockerfile=${inputs.params.pathToDockerFile}
-      - --destination=${outputs.resources.builtImage.url}
+      - --destination=${inputs.params.destinationRegistry}/${inputs.params.appName}:${inputs.params.imageTag}
       - --context=${inputs.params.pathToContext}
       - --cache=true
-      - --cache-repo=${outputs.resources.builtImage.url}
+      - --cache-repo=${inputs.params.destinationRegistry}/${inputs.params.appName}
       - --insecure
----
-
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
-  name: demo-pipeline
+  name: cicd-pipeline
 spec:
+  params:
+    - name: image-tag
+      description: tag associated with trigger event (maps to a commit SHA)
+      default: latest
+    - name: image-name
+      description: name of the given image to build (not used for mono-repo)
+      default: gcr.io/kubernetes-cicd-246207/demo/kubernetes-cicd
+    - name: release-name
+      description: name of the release if found
+      default: kubernetes-cicd
+    - name: repository-name
+      description: name of the repository that the webhook corresponds to
+      default: kubernetes-cicd
+    - name: target-namespace
+      description: namespace to deploy workloads to
+      default: tekton-pipelines
+    - name: docker-registry
+      description: docker registry base path
+      default: gcr.io/kubernetes-cicd-246207/demo
   resources:
-  - name: source-repo
+  - name: git-source
     type: git
-  - name: backend-image
+  - name: docker-image
     type: image
   tasks:
   - name: build-backend 
     taskRef:
-      name: build-push
+      name: webhook-build-push
     params:
+      - name: appName
+        value: backend
+      - name: imageTag
+        value: ${params.image-tag}
+      - name: destinationRegistry
+        value: ${params.docker-registry}
       - name: pathToDockerFile
         value: /workspace/workspace/app/backend/Dockerfile
       - name: pathToContext
@@ -125,10 +157,10 @@ spec:
     resources:
       inputs:
       - name: workspace
-        resource: source-repo
+        resource: git-source 
       outputs:
       - name: builtImage
-        resource: backend-image
+        resource: docker-image
   # - name: update-status 
   #   runAfter:
   #   - build-backend
@@ -144,15 +176,15 @@ spec:
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun
 metadata:
-  name: demo-pipeline-run-1
+  name: cicd-pipeline-run-1
 spec:
   serviceAccount: 'default'
   pipelineRef:
-    name: demo-pipeline
+    name: cicd-pipeline
   resources:
-  - name: source-repo
+  - name: git-source
     resourceRef:
-      name: demo-git-source
-  - name: backend-image
+      name: git-source
+  - name: docker-image
     resourceRef:
-      name: backend-image
+      name: docker-image
