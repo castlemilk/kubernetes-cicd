@@ -45,9 +45,9 @@ func TestGetProductUnit(t *testing.T) {
 		WithArgs("00000000-0000-0000-0000-000000000000").
 		WillReturnRows(sqlmock.NewRows(getColumns).
 			AddRow("00000000-0000-0000-0000-000000000000", "TEST", "test", "test", "test.png"))
-	productTestId, err := CreateProduct(DB, productTest)
+	productTestID, err := CreateProduct(DB, productTest)
 	// CreateProduct(DB, productTest)
-	GetProduct(DB, productTestId.String())
+	GetProduct(DB, productTestID.String())
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}

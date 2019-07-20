@@ -64,7 +64,7 @@ spec:
     args:
     - '-c'
     - |
-      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=e629b2e0d403b666d347267a43013e2121dba5e8' \
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
         -H 'Content-Type: application/json' \
         -X POST \
         -d '{"state": "${inputs.params.state}", "description": "Tekton", "context": "Build","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'

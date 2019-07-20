@@ -57,7 +57,7 @@ func TestAPIGetProduct(t *testing.T) {
 	assert.True(t, exists)
 	assert.Equal(t, body["name"], value)
 }
-func TestAPIGetProducts(t *testing.T) {
+func TestAPIListProducts(t *testing.T) {
 	// Build our expected body
 	db.Init()
 	// Grab our router
@@ -78,7 +78,7 @@ func TestAPIGetProducts(t *testing.T) {
 	assert.Equal(t, len(response), 10)
 }
 
-func TestAPIGetRatings(t *testing.T) {
+func TestAPIListRatings(t *testing.T) {
 	// Build our expected body
 	db.Init()
 	// Grab our router
@@ -178,10 +178,4 @@ func TestAPIDeleteRating(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, deleter.Code)
 
-}
-
-func TestMain(m *testing.M) {
-	db.Init()
-	exitcode := m.Run()
-	os.Exit(exitcode)
 }

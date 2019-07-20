@@ -14,6 +14,7 @@ BASE_ZONE=cicd.benebsworth.com
 DEFAULT_ZONE=default.cicd.benebsworth.com
 TEKTON_ZONE=tekton-pipelines.cicd.benebsworth.com
 TEKTON_PIPELINE_VERSION=v0.5.2
+-include .credentials
 
 define wait_for_deployment
 	@printf "🌀 waiting for deployment $(2) to complete"; 
@@ -117,7 +118,9 @@ gke.tekton.install:
 	kubectl apply -f https://github.com/tektoncd/pipeline/releases/download/${TEKTON_PIPELINE_VERSION}/release.yaml
 
 gke.pipeline.create:
-	sed 's/_PROJECT_ID/${PROJECT_ID}/g' ci/gke/build.yaml | kubectl apply -n tekton-pipelines -f -
+	@sed -e 's/_PROJECT_ID/${PROJECT_ID}/g' \
+			-e 's/_GITHUB_STATUS_TOKEN/${GITHUB_STATUS_TOKEN}/g' \
+			ci/gke/build.yaml | kubectl apply -n tekton-pipelines -f -
 gke.pipeline.restart:
 	kubectl delete -f ci/gke/build.yaml --ignore-not-found=true
 	kubectl delete pipelinerun -n tekton-pipelines -l tekton.dev/pipeline=cicd-pipeline

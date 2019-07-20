@@ -12,7 +12,7 @@ type Rating struct { // table name: ratings
 	ProductID   uuid.UUID				`json:"product_id" binding:"required"`
 }
 
-// Rating "Object"
+// RatingDetails "Object"
 type RatingDetails struct { // table name: ratings
 	ID          uuid.UUID `json:"id"`
 	Value       float64    `gorm:"column:rating" binding:"required"`

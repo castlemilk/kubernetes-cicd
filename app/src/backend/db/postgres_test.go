@@ -12,7 +12,7 @@ func TestDatabaseInit(t *testing.T) {
 	assert.NotNil(t, GetDB())
 }
 
-func TestDatabaseInitFail(t *testing.T) {
+func TestDatabaseUnitInitFail(t *testing.T) {
 	os.Setenv("PG_HOST", "LOL")
 	assert.Panics(t, func() { Init() })
 }

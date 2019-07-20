@@ -24,18 +24,18 @@ func SetupRouter() *gin.Engine {
 	{
 		products := v1.Group("/products")
 		{
-			products.GET("/", ProductController.GetProducts)
+			products.GET("/", ProductController.ListProducts)
 			products.GET("/:id", ProductController.GetProduct)
 		}
 		ratings := v1.Group("/ratings")
 		{
-			ratings.GET("/:product_id", RatingController.GetRatings)
+			ratings.GET("/:product_id", RatingController.ListRatings)
 			ratings.GET("/:product_id/:id", RatingController.GetRating)
 			ratings.POST("/:product_id", RatingController.CreateRating)
 			ratings.DELETE("/:id", RatingController.DeleteRating)
 		}
 		images := v1.Group("/images")
-		images.Static("/", "./assets/images")
+		images.Static1("/", "./assets/images")
 	}
 	return r
 }

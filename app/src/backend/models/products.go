@@ -5,7 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// Product "Object"
+// ProductSummary "Object"
 type ProductSummary struct { // table name: products
 	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"name" binding:"required"`
@@ -21,6 +21,8 @@ type ProductDetails struct { // table name: products
 	ImageURL		string		`json:"image_url" binding:"required"`
 
 }
+
+// Product - main interface which surfaces available query methods
 type Product interface {
 	List() ([]ProductDetails, error)
 	Get(ID string) (ProductDetails, error)

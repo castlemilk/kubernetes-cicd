@@ -8,14 +8,15 @@ import (
 	"fmt"
 	uuid "github.com/satori/go.uuid"
 )
-
-type Uri struct {
+// URI - struct for the parameters passed to the given endpoints
+type URI struct {
   ProductID string `uri:"product_id"`
   RatingID string `uri:"id"`
 }
 
-func GetRatings(c *gin.Context) {
-	var uri Uri
+// ListRatings - show all ratings for a specific product
+func ListRatings(c *gin.Context) {
+	var uri URI
 	var ratings []models.Rating
 
 	if err:= c.ShouldBindUri(&uri); err != nil {
@@ -34,6 +35,7 @@ func GetRatings(c *gin.Context) {
   c.JSON(http.StatusOK, &ratings)
 }
 
+// CreateRating - Create a rating for a given product
 func CreateRating(c *gin.Context) {
   var rating models.Rating
   var db = db.GetDB()
@@ -47,8 +49,10 @@ func CreateRating(c *gin.Context) {
   db.Create(&rating)
   c.JSON(http.StatusOK, &rating)
 }
+
+// DeleteRating - remove rating from given product
 func DeleteRating(c *gin.Context) {
-	var uri Uri
+	var uri URI
   var rating models.Rating
   var db = db.GetDB()
 
@@ -69,9 +73,9 @@ func DeleteRating(c *gin.Context) {
   c.JSON(http.StatusOK, &rating)
 }
 
-
+// GetRating - fetch a specific rating for a specific product
 func GetRating(c *gin.Context) {
-	var uri Uri
+	var uri URI
 	
 
 	if err:= c.ShouldBindUri(&uri); err != nil {

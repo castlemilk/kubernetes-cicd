@@ -6,8 +6,8 @@ import (
   "backend/models"
   "backend/db"
 )
-
-func GetProducts(c *gin.Context) {
+// ListProducts - List available products
+func ListProducts(c *gin.Context) {
   // var product models.Product
 	db := db.GetDB()
   products, err := models.ListProducts(db) 
@@ -17,13 +17,13 @@ func GetProducts(c *gin.Context) {
   c.JSON(200, products)
   return
 }
-
-type Uri struct {
+// URI - struct for the parameters passed to the given endpoints
+type URI struct {
   ID string `uri:"id" binding:"required"`
 }
-
+// GetProduct - Fetch a specific product based off search ID
 func GetProduct(c *gin.Context) {
-  var uri Uri
+  var uri URI
   db := db.GetDB() 
 	if err := c.ShouldBindUri(&uri); err != nil {
     // c.JSON(400, gin.H{"msg": err})
@@ -35,7 +35,7 @@ func GetProduct(c *gin.Context) {
 	}
   c.JSON(http.StatusOK, &resp)
 }
-
+// CreateProduct - Endpoint for creating a product
 func CreateProduct(c *gin.Context) {
   var item models.ProductDetails
   db := db.GetDB()
