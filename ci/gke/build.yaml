@@ -50,18 +50,24 @@ metadata:
 spec:
   inputs:
     resources:
-    - name: image
-      type: image
+    - name: workspace
+      type: git
+    params:
+    - name: state
+      description: state of the given pipeline, can be one of `success`, `failure`, `pending`, `error`
+      default: pending 
   steps:
   - name: message 
-    image: golang
-    env:
-    - name: GOPATH
-      value: /workspace/go
+    image: castlemilk/curl
     command:
-    - echo
+    - /bin/sh
     args:
-    - "${inputs.resources.image.revision}"
+    - '-c'
+    - |
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=e629b2e0d403b666d347267a43013e2121dba5e8' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "${inputs.params.state}", "description": "Tekton", "context": "Build","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: Task
@@ -140,7 +146,19 @@ spec:
   - name: docker-image
     type: image
   tasks:
-  - name: build-backend 
+  - name: initiate-build-status
+    taskRef:
+      name: update-status
+    resources:
+      inputs:
+      - name: workspace
+        resource: git-source
+    params:
+      - name: state
+        value: pending 
+  - name: build-backend
+    runAfter:
+    - initiate-build-status
     taskRef:
       name: webhook-build-push
     params:
@@ -161,17 +179,18 @@ spec:
       outputs:
       - name: builtImage
         resource: docker-image
-  - name: update-status 
+  - name: update-build-status
     runAfter:
     - build-backend
     taskRef:
       name: update-status
     resources:
       inputs:
-      - name: image
-        resource: docker-image
-        from:
-        - build-backend
+      - name: workspace
+        resource: git-source
+    params:
+      - name: state
+        value: success
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun

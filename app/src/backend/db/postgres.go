@@ -1,10 +1,10 @@
 package db
 
 import (
-	"backend/models"
 	"fmt"
 	"log"
 	"os"
+	"database/sql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
@@ -42,15 +42,16 @@ func Init() {
 		panic(err)
 	}
 	log.Println("Database connected")
-	if !db.HasTable(&models.Product{}) {
-		panic("table not found: products")
-	}
-	db.AutoMigrate(&models.Product{})
 
 }
 
 //GetDB ...
 func GetDB() *gorm.DB {
 	return db
+}
+
+func CreateDB(newDb *sql.DB) (*gorm.DB, error) {
+	db, err = gorm.Open("postgres", newDb)
+	return db, err
 }
 

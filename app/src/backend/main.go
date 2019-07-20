@@ -4,10 +4,11 @@ import (
 	ProductController "backend/controllers/products"
 	RatingController "backend/controllers/ratings"
 	"backend/db"
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	// "time"
 )
+
 // SetupRouter - responsible for initializing our Gin routes
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
