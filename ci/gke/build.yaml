@@ -61,7 +61,7 @@ spec:
     command:
     - echo
     args:
-    - "${input.resources.image.revision}"
+    - "${inputs.resources.image.revision}"
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: Task

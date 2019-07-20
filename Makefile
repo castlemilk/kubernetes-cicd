@@ -62,7 +62,7 @@ gke.cluster.get-credentials:
 ## scale down cluster to 0, effectively pause mode
 gke.cluster.pause:
 	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 0
-gke.cluster.unpause:
+gke.cluster.resume:
 	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 3
 	gcloud container clusters get-credentials kubernetes-cicd
 gke.cluster.delete:
@@ -120,6 +120,7 @@ gke.pipeline.create:
 	sed 's/_PROJECT_ID/${PROJECT_ID}/g' ci/gke/build.yaml | kubectl apply -n tekton-pipelines -f -
 gke.pipeline.restart:
 	kubectl delete -f ci/gke/build.yaml --ignore-not-found=true
+	kubectl delete pipelinerun -n tekton-pipelines -l tekton.dev/pipeline=cicd-pipeline
 	sed 's/_PROJECT_ID/${PROJECT_ID}/g' ci/gke/build.yaml | kubectl apply -n tekton-pipelines -f -
 
 local.tekton-dashboard.install:
@@ -226,7 +227,10 @@ local.knative.status:
 ## build project
 build.webapp:
 	go build -o webapp/bin/webapp ./webapp/cmd/webapp
-
+docker.login:
+	gcloud components install docker-credential-gcr
+	docker-credential-gcr configure-docker
+	gcloud auth configure-docker
 ## run project
 run.webapp:
 	webapp/bin/webapp
