@@ -177,6 +177,7 @@ spec:
     - '-mod=vendor'
     - '-run'
     - '"Integration"'
+    - '-v'
   - name: update-status-success
     image: castlemilk/curl
     command:

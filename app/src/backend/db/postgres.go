@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	_ "github.com/lib/pq"
 	"database/sql"
 	"github.com/jinzhu/gorm"
 )
