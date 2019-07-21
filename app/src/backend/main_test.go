@@ -29,7 +29,7 @@ func performRequestWithPayload(r http.Handler, method, path string, payload []by
 	return w
 }
 
-func TestAPIGetProduct(t *testing.T) {
+func TestAPIIntegrationGetProduct(t *testing.T) {
 	// Build our expected body
 	gin.SetMode(gin.ReleaseMode)
 	body := gin.H{
@@ -57,7 +57,7 @@ func TestAPIGetProduct(t *testing.T) {
 	assert.True(t, exists)
 	assert.Equal(t, body["name"], value)
 }
-func TestAPIListProducts(t *testing.T) {
+func TestAPIIntegrationListProducts(t *testing.T) {
 	// Build our expected body
 	db.Init()
 	// Grab our router
@@ -78,7 +78,7 @@ func TestAPIListProducts(t *testing.T) {
 	assert.Equal(t, len(response), 10)
 }
 
-func TestAPIListRatings(t *testing.T) {
+func TestAPIIntegrationListRatings(t *testing.T) {
 	// Build our expected body
 	db.Init()
 	// Grab our router
@@ -97,7 +97,7 @@ func TestAPIListRatings(t *testing.T) {
 	assert.True(t, len(response) >= 4)
 }
 
-func TestAPIGetRating(t *testing.T) {
+func TestAPIIntegrationGetRating(t *testing.T) {
 	// Build our expected body
 	db.Init()
 	// Grab our router
@@ -119,7 +119,7 @@ func TestAPIGetRating(t *testing.T) {
 	assert.Equal(t, response.ID.String(), "e56b3823-9b71-4260-b7a1-0a53766d824d")
 }
 
-func TestAPICreateRating(t *testing.T) {
+func TestAPIIntegrationCreateRating(t *testing.T) {
 	// Build our expected body
 	db.Init()
 	// Grab our router
@@ -148,7 +148,7 @@ func TestAPICreateRating(t *testing.T) {
 	performRequest(router, "DELETE", "/api/v1/ratings/"+response.ID.String())
 }
 
-func TestAPIDeleteRating(t *testing.T) {
+func TestAPIIntegrationDeleteRating(t *testing.T) {
 	// Build our expected body
 	db.Init()
 	// Grab our router

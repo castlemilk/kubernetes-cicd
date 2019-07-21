@@ -161,6 +161,22 @@ spec:
     - 'deployment/postgres-ci'
     - '--for'
     - 'condition=available'
+  - name: integration-tests
+    image: golang
+    env:
+    - name: GO111MODULE
+      value: "on"
+    - name: PG_HOST
+      value: postgres-ci
+    workingDir: ${inputs.params.workingDir}
+    command:
+    - go
+    args:
+    - 'test'
+    - './...'
+    - '-mod=vendor'
+    - '-run'
+    - '"Integration"'
   - name: update-status-success
     image: castlemilk/curl
     command:
@@ -171,7 +187,7 @@ spec:
       curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
         -H 'Content-Type: application/json' \
         -X POST \
-        -d '{"state": "success", "description": "Tekton", "context": "Linting","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+        -d '{"state": "success", "description": "Tekton", "context": "IntegrationTests","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: Task
