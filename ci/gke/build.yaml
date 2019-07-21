@@ -143,7 +143,10 @@ spec:
   - name: deploy-postgres
     image: gcr.io/k8s-skaffold/skaffold
     workingDir: ${inputs.params.workingDir}
+    command:
+    - skaffold
     args:
+    - 'deploy'
     - '-p'
     - 'ci-postgres'
   - name: wait-for-postgres
@@ -375,18 +378,18 @@ spec:
       - name: workspace
         resource: git-source
 ---
-apiVersion: tekton.dev/v1alpha1
-kind: PipelineRun
-metadata:
-  name: cicd-pipeline-run-1
-spec:
-  serviceAccount: 'default'
-  pipelineRef:
-    name: cicd-pipeline
-  resources:
-  - name: git-source
-    resourceRef:
-      name: git-source
-  - name: docker-image
-    resourceRef:
-      name: docker-image
+# apiVersion: tekton.dev/v1alpha1
+# kind: PipelineRun
+# metadata:
+#   name: cicd-pipeline-run-1
+# spec:
+#   serviceAccount: 'default'
+#   pipelineRef:
+#     name: cicd-pipeline
+#   resources:
+#   - name: git-source
+#     resourceRef:
+#       name: git-source
+#   - name: docker-image
+#     resourceRef:
+#       name: docker-image
