@@ -49,7 +49,7 @@ func TestAPIGetProduct(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Convert the JSON response to a map
 	var response map[string]string
-	err := json.Unmarshal([]byte(w.Body.String()), &response)
+	err := json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	value, exists := response["name"]
 	// Make some assertions on the correctness of the response.
@@ -69,7 +69,7 @@ func TestAPIListProducts(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Convert the JSON response to a map
 	var response []map[string]string
-	err := json.Unmarshal([]byte(w.Body.String()), &response)
+	err := json.Unmarshal(w.Body.Bytes(), &response)
 	_, exists := response[0]["name"]
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
@@ -90,7 +90,7 @@ func TestAPIListRatings(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Convert the JSON response to a map
 	var response []models.Rating
-	err := json.Unmarshal([]byte(w.Body.String()), &response)
+	err := json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
 	assert.Nil(t, err)
@@ -112,7 +112,7 @@ func TestAPIGetRating(t *testing.T) {
 	// Convert the JSON response to a map
 	var response models.RatingDetails
 
-	err := json.Unmarshal([]byte(w.Body.String()), &response)
+	err := json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
 	assert.Nil(t, err)
@@ -140,7 +140,7 @@ func TestAPICreateRating(t *testing.T) {
 	// Convert the JSON response to a map
 	var response models.Rating
 
-	err = json.Unmarshal([]byte(w.Body.String()), &response)
+	err = json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
 	assert.Nil(t, err)
@@ -169,7 +169,7 @@ func TestAPIDeleteRating(t *testing.T) {
 	// Convert the JSON response to a map
 	var response models.Rating
 
-	err = json.Unmarshal([]byte(w.Body.String()), &response)
+	err = json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
 	assert.Nil(t, err)

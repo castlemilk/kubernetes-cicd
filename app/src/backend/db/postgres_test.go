@@ -19,5 +19,8 @@ func TestDatabaseUnitInitFail(t *testing.T) {
 
 func TestDatabaseCreate(t *testing.T) {
 	db, _, _ := sqlmock.New()
-	CreateDB(db)
+	_, err := CreateDB(db)
+	if err != nil {
+		panic(err)
+	}
 }

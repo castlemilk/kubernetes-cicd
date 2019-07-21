@@ -14,6 +14,9 @@ func TestCreateProductsUnit(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	DB, err := db.CreateDB(sdb)
+	if err != nil {
+		t.Errorf("error creating databse %s", err)	
+	}
 	createColumns := []string{"id"}
 	productTest := ProductDetails{Name: "TEST", ImageURL: "test.png", Description: "test", Title: "test"}
 	mock.ExpectBegin()
@@ -21,7 +24,9 @@ func TestCreateProductsUnit(t *testing.T) {
 		WithArgs("TEST","test","test","test.png").
 		WillReturnRows(sqlmock.NewRows(createColumns).AddRow("00000000-0000-0000-0000-000000000000"))
 	mock.ExpectCommit()
-	CreateProduct(DB, productTest)
+	if _, err := CreateProduct(DB, productTest); err != nil {
+		t.Errorf("there was error creating product: %s", err)	
+	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
@@ -33,6 +38,9 @@ func TestGetProductUnit(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	DB, err := db.CreateDB(sdb)
+	if err != nil {
+		t.Errorf("error creating databse %s", err)	
+	}
 	createColumns := []string{"id"}
 	productTest := ProductDetails{Name: "TEST", ImageURL: "test.png", Description: "test", Title: "test"}
 	mock.ExpectBegin()
@@ -45,9 +53,17 @@ func TestGetProductUnit(t *testing.T) {
 		WithArgs("00000000-0000-0000-0000-000000000000").
 		WillReturnRows(sqlmock.NewRows(getColumns).
 			AddRow("00000000-0000-0000-0000-000000000000", "TEST", "test", "test", "test.png"))
-	productTestID, err := CreateProduct(DB, productTest)
+			
+	productTestID, createErr := CreateProduct(DB, productTest)
+
+	if createErr != nil {
+		t.Errorf("error creating product: %s", createErr)
+	}
+
 	// CreateProduct(DB, productTest)
-	GetProduct(DB, productTestID.String())
+	if _, err := GetProduct(DB, productTestID.String()); err != nil {
+		t.Errorf("error getting product: %s", err)	
+	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
@@ -59,6 +75,9 @@ func TestListProductsUnit(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	DB, err := db.CreateDB(sdb)
+	if err != nil {
+		t.Errorf("error creating databse %s", err)	
+	}
 	createColumns := []string{"id"}
 	productTest := ProductDetails{Name: "TEST", ImageURL: "test.png", Description: "test", Title: "test"}
 	mock.ExpectBegin()
@@ -70,9 +89,13 @@ func TestListProductsUnit(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "products"`)).
 		WillReturnRows(sqlmock.NewRows(getColumns).
 			AddRow("00000000-0000-0000-0000-000000000000", "TEST", "test", "test", "test.png"))
-	CreateProduct(DB, productTest)
+	if _, err := CreateProduct(DB, productTest); err != nil {
+		t.Errorf("error getting product: %s", err)
+	}
 	// CreateProduct(DB, productTest)
-	ListProducts(DB)
+	if _, err := ListProducts(DB); err != nil {
+		t.Errorf("error getting list of products: %s", err)	
+	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}

@@ -38,5 +38,8 @@ func main() {
 	db.Init()
 
 	r := SetupRouter()
-	r.Run()
+	err := r.Run()
+	if err != nil {
+		panic(err)
+	}
 }

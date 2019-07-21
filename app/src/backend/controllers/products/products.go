@@ -15,7 +15,6 @@ func ListProducts(c *gin.Context) {
     c.AbortWithStatus(http.StatusInternalServerError)
   }
   c.JSON(200, products)
-  return
 }
 // URI - struct for the parameters passed to the given endpoints
 type URI struct {
@@ -44,12 +43,10 @@ func CreateProduct(c *gin.Context) {
     c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
       "error": err.Error(),
     })
-    return
   }
   resp, err := models.CreateProduct(db, item)
   if err != nil {
     c.AbortWithStatus(http.StatusInternalServerError)
 	} 
   c.JSON(http.StatusOK, resp)
-  return
 }

@@ -11,11 +11,15 @@ RUN mkdir /user && \
     echo 'nobody:x:65534:' > /user/group
 
 WORKDIR /backend
+RUN GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.17.1
 COPY go.mod .
 COPY go.sum .
-RUN go mod download
 
 COPY . .
+
+
+# fetch dependencies
+# RUN go mod download
 
 # build app
 RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
