@@ -175,8 +175,7 @@ spec:
     - 'test'
     - './...'
     - '-mod=vendor'
-    - '-run'
-    - '"Integration"'
+    - '-run=Integration'
     - '-v'
   - name: update-status-success
     image: castlemilk/curl
@@ -227,8 +226,8 @@ spec:
     - 'test'
     - './...'
     - '-mod=vendor'
-    - '-run'
-    - '"Unit"'
+    - '-run=Unit'
+    - '-v'
   - name: update-status-success
     image: castlemilk/curl
     command:
