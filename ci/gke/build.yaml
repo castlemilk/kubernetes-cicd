@@ -168,7 +168,7 @@ spec:
       value: "on"
     - name: PG_HOST
       value: postgres-ci
-    workingDir: ${inputs.params.workingDir}
+    workingDir: ${inputs.params.workingDir}/src/backend
     command:
     - go
     args:
