@@ -94,15 +94,16 @@ spec:
         -H 'Content-Type: application/json' \
         -X POST \
         -d '{"state": "pending", "description": "Tekton", "context": "Linting","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
-  - name: run-tests
+  - name: run-linting
     image: golangci/golangci-lint
-    env:
-    - name: GO111MODULE
-      value: "on" 
     workingDir: ${inputs.params.workingDir}
     args:
     - 'run'
-  - name: update-status-pending
+    - './...'
+    - '--config'
+    - './.golangci.yaml'
+    - '-v'
+  - name: update-status-success
     image: castlemilk/curl
     command:
     - /bin/sh
@@ -153,7 +154,7 @@ spec:
     - '-mod=vendor'
     - '-run'
     - '"Unit"'
-  - name: update-status-pending
+  - name: update-status-success
     image: castlemilk/curl
     command:
     - /bin/sh
