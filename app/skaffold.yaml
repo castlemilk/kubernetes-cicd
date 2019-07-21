@@ -29,3 +29,11 @@ profiles:
     deploy:
       kustomize:
           path: deploy/overlays/non-prod
+  - name: ci-postgres
+    build: {}
+    deploy:
+      kustomize:
+        path: deploy/postgres/overlays/non-prod-ci
+        flags:
+          global:
+          - '-n=tekton-pipelines'

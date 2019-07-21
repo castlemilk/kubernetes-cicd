@@ -4,7 +4,6 @@ resources:
 # - pv.yaml
 # - pvc.yaml
 - service.yaml
-namespace: default
 commonLabels:
   tier: database
 configMapGenerator:

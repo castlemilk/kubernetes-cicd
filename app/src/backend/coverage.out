@@ -1,20 +1,4 @@
 mode: set
-backend/models/products.go:30.58,34.2 3 1
-backend/models/products.go:37.65,42.2 4 1
-backend/models/products.go:45.76,48.2 2 1
-backend/db/postgres.go:12.42,13.40 1 1
-backend/db/postgres.go:16.2,16.17 1 1
-backend/db/postgres.go:13.40,15.3 1 1
-backend/db/postgres.go:23.13,40.16 8 1
-backend/db/postgres.go:44.2,44.35 1 1
-backend/db/postgres.go:40.16,42.13 2 1
-backend/db/postgres.go:49.23,51.2 1 1
-backend/db/postgres.go:53.48,56.2 2 1
-backend/main.go:13.32,24.2 4 1
-backend/main.go:40.2,40.10 1 1
-backend/main.go:24.2,26.3 2 1
-backend/main.go:30.3,31.3 2 1
-backend/main.go:37.3,38.40 2 1
-backend/main.go:26.3,29.4 2 1
-backend/main.go:31.3,36.4 4 1
-backend/main.go:43.13,49.2 3 0
+backend/models/products.go:32.58,36.2 3 1
+backend/models/products.go:39.65,44.2 4 1
+backend/models/products.go:47.76,50.2 2 1
