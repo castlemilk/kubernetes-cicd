@@ -309,7 +309,7 @@ spec:
     resources:
       inputs:
       - name: workspace
-        resources: git-source
+        resource: git-source
   - name: test-backend
     taskRef:
       name: backend-unit-tests
