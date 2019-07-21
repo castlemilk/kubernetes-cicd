@@ -89,7 +89,7 @@ func TestAPIIntegrationListRatings(t *testing.T) {
 	// the request gives a 200
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Convert the JSON response to a map
-	var response []models.Rating
+	var response []models.RatingSummary
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
@@ -138,7 +138,7 @@ func TestAPIIntegrationCreateRating(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	// Convert the JSON response to a map
-	var response models.Rating
+	var response models.RatingSummary
 
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
@@ -167,7 +167,7 @@ func TestAPIIntegrationDeleteRating(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	// Convert the JSON response to a map
-	var response models.Rating
+	var response models.RatingSummary
 
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists

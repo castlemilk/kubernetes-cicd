@@ -17,19 +17,16 @@ type URI struct {
 // ListRatings - show all ratings for a specific product
 func ListRatings(c *gin.Context) {
 	var uri URI
-	var ratings []models.Rating
-
+	var ratings []models.RatingSummary
+	var err error
+	db := db.GetDB()
 	if err:= c.ShouldBindUri(&uri); err != nil {
 		c.JSON(400, gin.H{"msg": err})
 		return
 	}
-
-	id, _ := uuid.FromString(uri.ProductID)
-	db := db.GetDB()
-	if err := db.Table("ratings").Find(&ratings, "product_id = ?", id).Error; err != nil {
+	if ratings, err = models.ListRatings(db, uri.ProductID); err != nil {
 		fmt.Printf("no items found!\n")
     c.AbortWithStatus(http.StatusNotFound)
-    return
 	}
 
   c.JSON(http.StatusOK, &ratings)
@@ -37,7 +34,7 @@ func ListRatings(c *gin.Context) {
 
 // CreateRating - Create a rating for a given product
 func CreateRating(c *gin.Context) {
-  var rating models.Rating
+  var rating models.RatingSummary
   var db = db.GetDB()
 
   if err := c.BindJSON(&rating); err != nil {
@@ -46,14 +43,14 @@ func CreateRating(c *gin.Context) {
     })
     return
   }
-  db.Create(&rating)
+  db.Table("ratings").Create(&rating)
   c.JSON(http.StatusOK, &rating)
 }
 
 // DeleteRating - remove rating from given product
 func DeleteRating(c *gin.Context) {
 	var uri URI
-  var rating models.Rating
+  var rating models.RatingSummary
   var db = db.GetDB()
 
   if err:= c.ShouldBindUri(&uri); err != nil {
@@ -68,7 +65,7 @@ func DeleteRating(c *gin.Context) {
     c.AbortWithStatus(http.StatusNotFound)
     return
 	}
-	db.Delete(&rating)
+	db.Table("ratings").Delete(&rating)
 
   c.JSON(http.StatusOK, &rating)
 }

@@ -124,6 +124,7 @@ gke.pipeline.create:
 	@sed -e 's/_PROJECT_ID/${PROJECT_ID}/g' \
 			-e 's/_GITHUB_STATUS_TOKEN/${GITHUB_STATUS_TOKEN}/g' \
 			ci/gke/build.yaml | kubectl apply -n tekton-pipelines -f -
+	kubectl get services.serving -n tekton-pipelines --no-headers=true -l receive-adapter=github | awk '{print $$1}' | xargs -I {} kubectl patch services.serving.knative.dev --type='json' {} -p='[{"op": "replace", "path": "/metadata/annotations", "value": { "receive-adapter": "github", "autoscaling.knative.dev/minScale": "1" } }]'
 gke.pipeline.restart:
 	kubectl delete -f ci/gke/build.yaml --ignore-not-found=true
 	kubectl delete pipelinerun -n tekton-pipelines -l tekton.dev/pipeline=cicd-pipeline
