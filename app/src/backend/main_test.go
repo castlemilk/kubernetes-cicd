@@ -138,13 +138,14 @@ func TestAPIIntegrationCreateRating(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	// Convert the JSON response to a map
-	var response models.RatingSummary
+	var response models.RatingCreated 
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+		t.Errorf("failed to unmarshal response: %s", err)	
+	}
 
-	err = json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
-	assert.Nil(t, err)
-	assert.Equal(t, response.Value, 1.1)
+	assert.NotNil(t, response)
 	performRequest(router, "DELETE", "/api/v1/ratings/"+response.ID.String())
 }
 
@@ -167,13 +168,14 @@ func TestAPIIntegrationDeleteRating(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	// Convert the JSON response to a map
-	var response models.RatingSummary
+	var response models.RatingCreated 
 
-	err = json.Unmarshal(w.Body.Bytes(), &response)
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+		t.Errorf("failed to unmarshal response: %s", err)
+	}
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
-	assert.Nil(t, err)
-	assert.Equal(t, response.Value, 1.1)
+	assert.NotNil(t, response)
 	deleter := performRequest(router, "DELETE", "/api/v1/ratings/"+response.ID.String())
 
 	assert.Equal(t, http.StatusOK, deleter.Code)

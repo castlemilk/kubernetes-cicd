@@ -18,6 +18,11 @@ type RatingSummary struct { // table name: ratings
 	ProductID   uuid.UUID				`json:"product_id" binding:"required"`
 }
 
+// RatingCreated "Object"
+type RatingCreated struct {
+	ID 					uuid.UUID 			`json:"id"` 
+}
+
 // RatingDetails "Object"
 type RatingDetails struct { // table name: ratings
 	ID          uuid.UUID `json:"id"`
@@ -40,3 +45,20 @@ func ListRatings(db *gorm.DB, productID string) ([]RatingSummary, error) {
 	}
 	return ratings, err
 }
+
+// CreateRating - create a new product
+func CreateRating(db *gorm.DB, rating RatingSummary) (RatingCreated, error) {
+	err := db.Table("ratings").Create(&rating).Error
+	ratingCreated := RatingCreated{ID: rating.ID}
+	return ratingCreated, err
+}
+
+// GetRating - create a new product
+func GetRating(db *gorm.DB, ID string) (RatingDetails, error) {
+	var rating RatingDetails
+	id, _ := uuid.FromString(ID)
+	err := db.Table("ratings").Find(&rating, "id = ?", id).Error
+	
+	return rating, err
+}
+
