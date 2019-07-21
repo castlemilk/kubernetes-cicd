@@ -1,18 +1,18 @@
 package main
 
 import (
-	"encoding/json"
-	"os"
-	"fmt"
-	"io/ioutil"
-	"bytes"
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 	"backend/db"
 	"backend/models"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
 )
 
 func performRequest(r http.Handler, method, path string) *httptest.ResponseRecorder {
@@ -49,7 +49,7 @@ func TestAPIGetProduct(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Convert the JSON response to a map
 	var response map[string]string
-	err := json.Unmarshal([]byte(w.Body.String()), &response)
+	err := json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	value, exists := response["name"]
 	// Make some assertions on the correctness of the response.
@@ -57,7 +57,7 @@ func TestAPIGetProduct(t *testing.T) {
 	assert.True(t, exists)
 	assert.Equal(t, body["name"], value)
 }
-func TestAPIGetProducts(t *testing.T) {
+func TestAPIListProducts(t *testing.T) {
 	// Build our expected body
 	db.Init()
 	// Grab our router
@@ -69,7 +69,7 @@ func TestAPIGetProducts(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Convert the JSON response to a map
 	var response []map[string]string
-	err := json.Unmarshal([]byte(w.Body.String()), &response)
+	err := json.Unmarshal(w.Body.Bytes(), &response)
 	_, exists := response[0]["name"]
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
@@ -78,8 +78,7 @@ func TestAPIGetProducts(t *testing.T) {
 	assert.Equal(t, len(response), 10)
 }
 
-
-func TestAPIGetRatings(t *testing.T) {
+func TestAPIListRatings(t *testing.T) {
 	// Build our expected body
 	db.Init()
 	// Grab our router
@@ -91,11 +90,11 @@ func TestAPIGetRatings(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Convert the JSON response to a map
 	var response []models.Rating
-	err := json.Unmarshal([]byte(w.Body.String()), &response)
+	err := json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
 	assert.Nil(t, err)
-	assert.True(t, len(response) > 4)
+	assert.True(t, len(response) >= 4)
 }
 
 func TestAPIGetRating(t *testing.T) {
@@ -113,13 +112,12 @@ func TestAPIGetRating(t *testing.T) {
 	// Convert the JSON response to a map
 	var response models.RatingDetails
 
-	err := json.Unmarshal([]byte(w.Body.String()), &response)
+	err := json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
 	assert.Nil(t, err)
 	assert.Equal(t, response.ID.String(), "e56b3823-9b71-4260-b7a1-0a53766d824d")
 }
-
 
 func TestAPICreateRating(t *testing.T) {
 	// Build our expected body
@@ -130,11 +128,11 @@ func TestAPICreateRating(t *testing.T) {
 	ratingByteValue, _ := ioutil.ReadAll(jsonFile)
 	// if we os.Open returns an error then handle it
 	if err != nil {
-			fmt.Println(err)
+		fmt.Println(err)
 	}
 	// Perform a GET request with that handler.
 	w := performRequestWithPayload(router, "POST", "/api/v1/ratings/52c65bc6-4cc8-484b-afee-e03dfd5ebd12", ratingByteValue)
-	
+
 	// Assert we encoded correctly,
 	// the request gives a 200
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -142,12 +140,12 @@ func TestAPICreateRating(t *testing.T) {
 	// Convert the JSON response to a map
 	var response models.Rating
 
-	err = json.Unmarshal([]byte(w.Body.String()), &response)
+	err = json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
 	assert.Nil(t, err)
 	assert.Equal(t, response.Value, 1.1)
-	performRequest(router, "DELETE", "/api/v1/ratings/" + response.ID.String())
+	performRequest(router, "DELETE", "/api/v1/ratings/"+response.ID.String())
 }
 
 func TestAPIDeleteRating(t *testing.T) {
@@ -159,11 +157,11 @@ func TestAPIDeleteRating(t *testing.T) {
 	ratingByteValue, _ := ioutil.ReadAll(jsonFile)
 	// if we os.Open returns an error then handle it
 	if err != nil {
-			fmt.Println(err)
+		fmt.Println(err)
 	}
 	// Perform a GET request with that handler.
 	w := performRequestWithPayload(router, "POST", "/api/v1/ratings/52c65bc6-4cc8-484b-afee-e03dfd5ebd12", ratingByteValue)
-	
+
 	// Assert we encoded correctly,
 	// the request gives a 200
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -171,16 +169,13 @@ func TestAPIDeleteRating(t *testing.T) {
 	// Convert the JSON response to a map
 	var response models.Rating
 
-	err = json.Unmarshal([]byte(w.Body.String()), &response)
+	err = json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
 	assert.Nil(t, err)
 	assert.Equal(t, response.Value, 1.1)
-	deleter := performRequest(router, "DELETE", "/api/v1/ratings/" + response.ID.String())
+	deleter := performRequest(router, "DELETE", "/api/v1/ratings/"+response.ID.String())
 
 	assert.Equal(t, http.StatusOK, deleter.Code)
-	
+
 }
-
-
-

@@ -14,6 +14,7 @@ BASE_ZONE=cicd.benebsworth.com
 DEFAULT_ZONE=default.cicd.benebsworth.com
 TEKTON_ZONE=tekton-pipelines.cicd.benebsworth.com
 TEKTON_PIPELINE_VERSION=v0.5.2
+-include .credentials
 
 define wait_for_deployment
 	@printf "🌀 waiting for deployment $(2) to complete"; 
@@ -62,9 +63,12 @@ gke.cluster.get-credentials:
 ## scale down cluster to 0, effectively pause mode
 gke.cluster.pause:
 	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 0
-gke.cluster.unpause:
+gke.cluster.resume:
 	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 3
 	gcloud container clusters get-credentials kubernetes-cicd
+	sleep 30
+	k scale deployment -n knative-serving webhook --replicas 2
+	k scale deployment -n knative-serving webhook --replicas 1
 gke.cluster.delete:
 	gcloud beta container clusters delete kubernetes-cicd --zone="australia-southeast1-a"
 ## configure DNS settings for IP assigned to ingress-gateway
@@ -117,9 +121,12 @@ gke.tekton.install:
 	kubectl apply -f https://github.com/tektoncd/pipeline/releases/download/${TEKTON_PIPELINE_VERSION}/release.yaml
 
 gke.pipeline.create:
-	sed 's/_PROJECT_ID/${PROJECT_ID}/g' ci/gke/build.yaml | kubectl apply -n tekton-pipelines -f -
+	@sed -e 's/_PROJECT_ID/${PROJECT_ID}/g' \
+			-e 's/_GITHUB_STATUS_TOKEN/${GITHUB_STATUS_TOKEN}/g' \
+			ci/gke/build.yaml | kubectl apply -n tekton-pipelines -f -
 gke.pipeline.restart:
 	kubectl delete -f ci/gke/build.yaml --ignore-not-found=true
+	kubectl delete pipelinerun -n tekton-pipelines -l tekton.dev/pipeline=cicd-pipeline
 	sed 's/_PROJECT_ID/${PROJECT_ID}/g' ci/gke/build.yaml | kubectl apply -n tekton-pipelines -f -
 
 local.tekton-dashboard.install:
@@ -226,7 +233,10 @@ local.knative.status:
 ## build project
 build.webapp:
 	go build -o webapp/bin/webapp ./webapp/cmd/webapp
-
+docker.login:
+	gcloud components install docker-credential-gcr
+	docker-credential-gcr configure-docker
+	gcloud auth configure-docker
 ## run project
 run.webapp:
 	webapp/bin/webapp

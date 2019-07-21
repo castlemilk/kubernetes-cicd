@@ -1,14 +1,14 @@
 package db
 
 import (
-	"backend/models"
 	"fmt"
 	"log"
 	"os"
+	"database/sql"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
+// getEnv - fetch environment variables
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
@@ -42,15 +42,17 @@ func Init() {
 		panic(err)
 	}
 	log.Println("Database connected")
-	if !db.HasTable(&models.Product{}) {
-		panic("table not found: products")
-	}
-	db.AutoMigrate(&models.Product{})
 
 }
 
-//GetDB ...
+// GetDB fetch db object which was instatiated by Init()
 func GetDB() *gorm.DB {
 	return db
+}
+
+// CreateDB create a new db object for the given instance
+func CreateDB(newDb *sql.DB) (*gorm.DB, error) {
+	db, err = gorm.Open("postgres", newDb)
+	return db, err
 }
 

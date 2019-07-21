@@ -3,53 +3,50 @@ package products
 import (
 	"net/http"
   "github.com/gin-gonic/gin"
-	"backend/db"
-	"backend/models"
-	uuid "github.com/satori/go.uuid"
+  "backend/models"
+  "backend/db"
 )
-
-func GetProducts(c *gin.Context) {
-
-  var products []models.ProductDetails
-  db := db.GetDB()
-  db.Table("products").Find(&products)
+// ListProducts - List available products
+func ListProducts(c *gin.Context) {
+  // var product models.Product
+	db := db.GetDB()
+  products, err := models.ListProducts(db) 
+  if err != nil {
+    c.AbortWithStatus(http.StatusInternalServerError)
+  }
   c.JSON(200, products)
-  return
 }
-
-type Uri struct {
+// URI - struct for the parameters passed to the given endpoints
+type URI struct {
   ID string `uri:"id" binding:"required"`
 }
-
+// GetProduct - Fetch a specific product based off search ID
 func GetProduct(c *gin.Context) {
-	var uri Uri
-	
-
+  var uri URI
+  db := db.GetDB() 
 	if err := c.ShouldBindUri(&uri); err != nil {
     // c.JSON(400, gin.H{"msg": err})
     c.AbortWithStatus(http.StatusNotFound)
 	}
-
-	id, _ := uuid.FromString(uri.ID)
-	product := new(models.ProductDetails)
-	db := db.GetDB()
-	if err := db.Table("products").Find(&product, "id = ?", id).Error; err != nil {
+  resp, err := models.GetProduct(db, uri.ID)
+	if err != nil {
     c.AbortWithStatus(http.StatusNotFound)
 	}
-  c.JSON(http.StatusOK, &product)
+  c.JSON(http.StatusOK, &resp)
 }
-
+// CreateProduct - Endpoint for creating a product
 func CreateProduct(c *gin.Context) {
-  var product models.Product
-  var db = db.GetDB()
+  var item models.ProductDetails
+  db := db.GetDB()
 
-  if err := c.BindJSON(&product); err != nil {
+  if err := c.BindJSON(&item); err != nil {
     c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
       "error": err.Error(),
     })
-    return
   }
-  db.Create(&product)
-  c.JSON(http.StatusOK, &product)
-  return
+  resp, err := models.CreateProduct(db, item)
+  if err != nil {
+    c.AbortWithStatus(http.StatusInternalServerError)
+	} 
+  c.JSON(http.StatusOK, resp)
 }
