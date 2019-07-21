@@ -46,18 +46,14 @@ spec:
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: update-status
+  name: update-statuses
 spec:
   inputs:
     resources:
     - name: workspace
       type: git
-    params:
-    - name: state
-      description: state of the given pipeline, can be one of `success`, `failure`, `pending`, `error`
-      default: pending 
   steps:
-  - name: message 
+  - name: init-all
     image: castlemilk/curl
     command:
     - /bin/sh
@@ -67,7 +63,19 @@ spec:
       curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
         -H 'Content-Type: application/json' \
         -X POST \
-        -d '{"state": "${inputs.params.state}", "description": "Tekton", "context": "Build","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+        -d '{"state": "pending", "description": "Tekton", "context": "Build","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "pending", "description": "Tekton", "context": "Linting","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "pending", "description": "Tekton", "context": "UnitTests","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "pending", "description": "Tekton", "context": "IntegrationTests","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: Task
@@ -83,17 +91,6 @@ spec:
       description: working directory where src files live
       default: /workspace/workspace/app/src/backend
   steps:
-  - name: update-status-pending
-    image: castlemilk/curl
-    command:
-    - /bin/sh
-    args:
-    - '-c'
-    - |
-      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
-        -H 'Content-Type: application/json' \
-        -X POST \
-        -d '{"state": "pending", "description": "Tekton", "context": "Linting","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
   - name: run-linting
     image: golangci/golangci-lint
     workingDir: ${inputs.params.workingDir}
@@ -129,17 +126,6 @@ spec:
       description: working directory where src files live
       default: /workspace/workspace/app/
   steps:
-  - name: update-status-pending
-    image: castlemilk/curl
-    command:
-    - /bin/sh
-    args:
-    - '-c'
-    - |
-      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
-        -H 'Content-Type: application/json' \
-        -X POST \
-        -d '{"state": "pending", "description": "Tekton", "context": "IntegrationTests","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
   - name: deploy-postgres
     image: gcr.io/k8s-skaffold/skaffold
     workingDir: ${inputs.params.workingDir}
@@ -203,17 +189,6 @@ spec:
       description: working directory where src files live
       default: /workspace/workspace/app/src/backend
   steps:
-  - name: update-status-pending
-    image: castlemilk/curl
-    command:
-    - /bin/sh
-    args:
-    - '-c'
-    - |
-      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
-        -H 'Content-Type: application/json' \
-        -X POST \
-        -d '{"state": "pending", "description": "Tekton", "context": "UnitTests","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
   - name: run-tests
     image: golang
     env:
@@ -272,17 +247,6 @@ spec:
       - name: builtImage
         type: image
   steps:
-  - name: update-status-pending
-    image: castlemilk/curl
-    command:
-    - /bin/sh
-    args:
-    - '-c'
-    - |
-      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
-        -H 'Content-Type: application/json' \
-        -X POST \
-        -d '{"state": "pending", "description": "Tekton", "context": "Build","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
   - name: build-and-push
     image: gcr.io/kaniko-project/executor
     env:
@@ -339,6 +303,13 @@ spec:
   - name: docker-image
     type: image
   tasks:
+  - name: init-statuses
+    taskRef:
+      name: update-statuses
+    resources:
+      inputs:
+      - name: workspace
+        resources: git-source
   - name: test-backend
     taskRef:
       name: backend-unit-tests
