@@ -10,7 +10,6 @@ RUN mkdir /user && \
     echo 'nobody:x:65534:65534:nobody:/:' > /user/passwd && \
     echo 'nobody:x:65534:' > /user/group
 
-RUN go get -u golang.org/x/lint/golint
 WORKDIR /backend
 COPY go.mod .
 COPY go.sum .
@@ -18,14 +17,8 @@ RUN go mod download
 
 COPY . .
 
-# lint the app source
-RUN golint ./...
-
 # build app
 RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
-
-# run unit tests
-RUN CGO_ENABLED=0 go test ./... -run 'Unit'
 
 # base image for running our microservice
 FROM alpine:3.10.1

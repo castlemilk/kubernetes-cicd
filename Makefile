@@ -66,6 +66,9 @@ gke.cluster.pause:
 gke.cluster.resume:
 	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 3
 	gcloud container clusters get-credentials kubernetes-cicd
+	sleep 30
+	k scale deployment -n knative-serving webhook --replicas 2
+	k scale deployment -n knative-serving webhook --replicas 1
 gke.cluster.delete:
 	gcloud beta container clusters delete kubernetes-cicd --zone="australia-southeast1-a"
 ## configure DNS settings for IP assigned to ingress-gateway

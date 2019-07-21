@@ -13,13 +13,6 @@ import (
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 	r.Use(cors.Default())
-	// r.Use(cors.New(cors.Config{
-	// 	AllowOrigins:     []string{"http://localhost:3001", "http://localhost", "localhost:3001"},
-	// 	AllowMethods:     []string{"POST", "GET", "DELETE"},
-	// 	AllowHeaders:     []string{"Origin"},
-	// 	ExposeHeaders:    []string{"Content-Length"},
-	// 	MaxAge: 12 * time.Hour,
-	// }))
 	v1 := r.Group("/api/v1")
 	{
 		products := v1.Group("/products")
@@ -35,7 +28,7 @@ func SetupRouter() *gin.Engine {
 			ratings.DELETE("/:id", RatingController.DeleteRating)
 		}
 		images := v1.Group("/images")
-		images.Static1("/", "./assets/images")
+		images.Static("/", "./assets/images")
 	}
 	return r
 }
