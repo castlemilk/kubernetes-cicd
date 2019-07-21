@@ -72,6 +72,30 @@ spec:
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
+  name: unit-tests
+spec:
+  inputs:
+    resources:
+    - name: workspace
+      type: git
+  steps:
+  - name: run-tests
+    image: golang
+    env:
+    - name: GO111MODULE
+      value: on 
+    workingDir: /workspace/workspace/app/src/backend
+    command:
+    - go
+    args:
+    - 'test'
+    - './...'
+    - '-run'
+    - '"Unit"'
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
   name: webhook-build-push
 spec:
   inputs:
@@ -169,7 +193,7 @@ spec:
       - name: destinationRegistry
         value: ${params.docker-registry}
       - name: pathToDockerFile
-        value: /workspace/workspace/app/src/backend/Dockerfile.test
+        value: /workspace/workspace/app/src/backend/Dockerfile
       - name: pathToContext
         value: /workspace/workspace/app/src/backend
     resources:
