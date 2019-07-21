@@ -19,10 +19,9 @@ COPY . .
 
 
 # fetch dependencies
-# RUN go mod download
 
 # build app
-RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
+RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -mod=vendor
 
 # base image for running our microservice
 FROM alpine:3.10.1
