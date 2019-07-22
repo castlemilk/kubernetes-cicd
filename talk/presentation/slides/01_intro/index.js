@@ -62,26 +62,11 @@ export default [
       lineHeight={1}
       textColor='secondary'
     >
-      Developer Experience & CI/CD
+     Kubernetes-centric CI/CD  
     </Heading>
     <Text margin='30px 0 0' textColor='tertiary' size={5} bold>
       Ben Ebsworth
     </Text>
-  </Slide>,
-  <Slide align='center flext-start' transition={['slide']} b>
-    <Heading>Platform Goals</Heading>
-    <Image src={Horse} />
-  </Slide>,
-  <Slide
-    align='center center'
-    transition={['zoom']}
-    bgColor='primary'
-    bgImage={Landscape1}
-    bgDarken={0.2}
-  >
-    <Heading textColor="#34a752" lineHeight={2} textAlign='right'>
-      Current Landscape
-    </Heading>
   </Slide>,
   <Slide align='center center' transition={['slide']} bgColor='primary'>
     <Heading textColor='#4285f4'>Build Tools</Heading>
