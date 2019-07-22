@@ -5,6 +5,12 @@ bases:
 resources:
 - namespace.yaml
 namespace: development
+vars:
+- name: POSTGRES_SERVICE
+  objref:
+    kind: Service
+    name: postgres
+    apiVersion: v1
 patchesJson6902:
 - target:
     group: ''
