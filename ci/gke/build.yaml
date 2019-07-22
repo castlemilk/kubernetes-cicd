@@ -63,7 +63,11 @@ spec:
       curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
         -H 'Content-Type: application/json' \
         -X POST \
-        -d '{"state": "pending", "description": "Tekton", "context": "Build","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+        -d '{"state": "pending", "description": "Tekton", "context": "BuildBackend","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "pending", "description": "Tekton", "context": "BuildFrontend","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
       curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
         -H 'Content-Type: application/json' \
         -X POST \
@@ -269,6 +273,7 @@ spec:
     args:
       - --dockerfile=${inputs.params.pathToDockerFile}
       - --destination=${inputs.params.destinationRegistry}/${inputs.params.appName}:${inputs.params.imageTag}
+      - --destination=${inputs.params.destinationRegistry}/${inputs.params.appName}:latest
       - --context=${inputs.params.pathToContext}
       - --cache=true
       - --cache-repo=${inputs.params.destinationRegistry}/${inputs.params.appName}
