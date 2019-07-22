@@ -54,6 +54,14 @@ profiles:
           flags:
             global:
             - '-n=prod'
+  - name: prod-postgres
+    build: {}
+    deploy:
+      kustomize:
+        path: deploy/postgres/overlays/production
+        flags:
+          global:
+          - '-n=prod'
   - name: ci-postgres
     build: {}
     deploy:

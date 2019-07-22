@@ -231,6 +231,63 @@ spec:
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
+  name: deploy-products
+spec:
+  inputs:
+    resources:
+    - name: workspace
+      type: git
+    params:
+    - name: workingDir
+      description: working directory where src files live
+      default: /workspace/workspace/app/
+  steps:
+  - name: deploy-postgres
+    image: gcr.io/k8s-skaffold/skaffold
+    workingDir: ${inputs.params.workingDir}
+    command:
+    - skaffold
+    args:
+    - 'deploy'
+    - '-p'
+    - 'prod-postgres'
+  - name: wait-for-postgres
+    image: gcr.io/k8s-skaffold/skaffold
+    workingDir: ${inputs.params.workingDir}
+    command:
+    - kubectl
+    args:
+    - '-n'
+    - 'prod'
+    - 'wait'
+    - 'deployment/postgres'
+    - '--for'
+    - 'condition=available'
+  - name: deploy-products
+    image: gcr.io/k8s-skaffold/skaffold
+    workingDir: ${inputs.params.workingDir}
+    command:
+    - skaffold
+    args:
+    - 'deploy'
+    - '-p'
+    - 'production'
+  - name: update-status-success
+    image: castlemilk/curl
+    command:
+    - /bin/sh
+    args:
+    - '-c'
+    - |
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "success", "description": "Tekton", "context": "Deploy","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+---
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
   name: webhook-build-push
 spec:
   inputs:
@@ -404,6 +461,16 @@ spec:
   - name: integration-test-backend
     taskRef:
       name: backend-integration-tests
+    params:
+      - name: workingDir
+        value: /workspace/workspace/app/
+    resources:
+      inputs:
+      - name: workspace
+        resource: git-source
+  - name: deploy-products
+    taskRef:
+      name: deploy-products
     params:
       - name: workingDir
         value: /workspace/workspace/app/
