@@ -76,7 +76,7 @@ class App extends React.Component {
     </IconButton>
     </div>
     )
-    return (<RequestConsumer>{({ getProduct, listProducts }) => (
+    return (<RequestConsumer>{({ getProduct, listProducts, updateRating }) => (
       <div className={classes.root}>
         <AppBar position="static">
             {productMenu}
@@ -85,6 +85,7 @@ class App extends React.Component {
           <ProductCatalogue
             getProduct={(id) => getProduct(id)}
             listProducts={() => listProducts()}
+            updateRating={(id, value) => updateRating(id, value)}
             lastUpdated={this.state.appLastUpdate}
             />
         </AppView>

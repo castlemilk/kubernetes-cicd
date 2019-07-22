@@ -63,7 +63,11 @@ func GetProductRatings(db *gorm.DB, ID string) (RatingsAverage, error) {
 	if ratingsQuery.TotalRatings == 0 {
 		return RatingsAverage{Average: 0, TotalRatings: 0}, nil 
 	}
-	return RatingsAverage{Average: math.Round((ratingsQuery.SumRatings / float64(ratingsQuery.TotalRatings) * 100) / 100), TotalRatings: ratingsQuery.TotalRatings}, nil
+	averageRaw := ratingsQuery.SumRatings / float64(ratingsQuery.TotalRatings)
+	fmt.Printf("averageRaw: %f", averageRaw)
+	average := math.Round((ratingsQuery.SumRatings / float64(ratingsQuery.TotalRatings)) * 100) / 100
+	fmt.Printf("-- rounded -->  %f", average)
+	return RatingsAverage{Average: average, TotalRatings: ratingsQuery.TotalRatings}, nil
 }
 
 // CreateProduct - create a new product

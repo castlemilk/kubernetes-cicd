@@ -31,12 +31,16 @@ class RequestProvider extends React.Component {
     getImage(name) {
       return this.api_client.getImage(name)
     }
+    updateRating(id, value) {
+      return this.api_client.updateRating(id, value)
+    }
     render() {
       return (
         <RequestContext.Provider
           value={{ 
             getProduct: (id) => this.getProduct(id),
             listProducts: () => this.listProducts(),
+            updateRating: (id, value) => this.updateRating(id, value),
           }}
         >
           {this.props.children}

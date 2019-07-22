@@ -12,7 +12,10 @@ import (
 // SetupRouter - responsible for initializing our Gin routes
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
-	r.Use(cors.Default())
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowHeaders = []string{"Cache-Control", "Content-Type"}
+	r.Use(cors.New(config))
 	v1 := r.Group("/api/v1")
 	{
 		products := v1.Group("/products")

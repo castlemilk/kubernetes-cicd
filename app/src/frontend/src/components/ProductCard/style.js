@@ -10,6 +10,7 @@ export const ProductImageWrapper = styled.img`
     margin-bottom: 10px;
     grid-area: image;
 `
+
 export const ProductLoadingWrapper = styled.div`
     height: 254px;
     width: 200px;
@@ -101,10 +102,24 @@ export const ProductPriceWrapper = styled.div`
 
 export const ProductRatingWrapper = styled.div`
 display: flex;
+height: 34px;
 flex-direction: row;
 justify-content: center;
 align-items: center;
 margin-top: 10px;
+`;
+export const ProductRatingCount = styled.div`
+    height: 100%;
+    margin-left: 10px;
+    margin-top: 4px;
+    align-content: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    font-family: Avenir Next, sans-serif;
+    font-size: 18px;
+
 `;
 export const ProductStockCardWrapper = styled.div`
     display: grid;
