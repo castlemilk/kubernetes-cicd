@@ -14,22 +14,17 @@ import {
 import Terminal from 'spectacle-terminal'
 import CodeSlide from 'spectacle-code-slide'
 import { kustomizeFolderLayout, skaffoldConfig } from './messages'
-import CoursePlan from './components/CoursePlan'
-import Architecture from './components/Architecture'
-import Topology from './components/Topology'
-import Kasna from '../../../assets/kasna.jpg'
-import Horse from '../../../assets/horse.jpg'
 import Demo from '../../../assets/demo.jpg'
 import Kaniko from '../../../assets/kaniko.jpg'
 import Tekton from '../../../assets/tekton.jpg'
 import Spinnaker from '../../../assets/spinnaker.jpg'
 import Skaffold from '../../../assets/skaffold.jpg'
+import Kubernetes from '../../../assets/kubernetes.png'
 import Kustomize from '../../../assets/kustomize.jpg'
 import ConfigManagement from '../../../assets/configManagement.jpg'
 import DevXP from '../../../assets/devXP.jpg'
 import Github from '../../../assets/github.jpg'
 import Jib from '../../../assets/jib.jpg'
-import Landscape1 from '../../../assets/landscape-1.jpg'
 import Pipelines from '../../../assets/pipelines.jpg'
 const STYLE = {
   blue: { color: '#2196f3' },
@@ -53,7 +48,7 @@ const style = {
 }
 export default [
   <Slide align='center center' transition={['zoom']} bgColor='primary'>
-    <Image src={Kasna} />
+    <Image src={Kubernetes} />
     <Heading
       margin='100px 0 0 0'
       size={1}
