@@ -66,10 +66,10 @@ func TestGetProductUnit(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows(getProductColumns).
 			AddRow("00000000-0000-0000-0000-000000000000", "TEST", "test", "test", "test.png"))
 	// ---------------- TEST RATING QUERY ---------------------------
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT COUNT(product_id) AS total_ratings, COALESCE(SUM(rating), 0) AS sum_ratings FROM "ratings" WHERE (product_id = $1) LIMIT 1`)).
-		WithArgs("00000000-0000-0000-0000-000000000000").
-		WillReturnRows(sqlmock.NewRows([]string{"total_ratings", "sum_ratings"}).
-			AddRow(1, 1.1))
+	// mock.ExpectQuery(regexp.QuoteMeta(`SELECT COUNT(product_id) AS total_ratings, COALESCE(SUM(rating), 0) AS sum_ratings FROM "ratings" WHERE (product_id = $1) LIMIT 1`)).
+	// 	WithArgs("00000000-0000-0000-0000-000000000000").
+	// 	WillReturnRows(sqlmock.NewRows([]string{"total_ratings", "sum_ratings"}).
+	// 		AddRow(1, 1.1))
 	// ---------------------------------------------------------------
 
 	//create product
