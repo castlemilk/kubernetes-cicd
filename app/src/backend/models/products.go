@@ -56,9 +56,12 @@ func GetProduct(db *gorm.DB, ID string) (ProductDetails, error) {
 func GetProductRatings(db *gorm.DB, ID string) (RatingsAverage, error) {
 	id, _ := uuid.FromString(ID)
 	var ratingsQuery RatingsAverageQuery
-	if err := db.Table("ratings").Select("COUNT(product_id) AS total_ratings, SUM(rating) AS sum_ratings").Where("product_id = ?", id).First(&ratingsQuery).Error; err != nil {
+	if err := db.Table("ratings").Select("COUNT(product_id) AS total_ratings, COALESCE(SUM(rating), 0) AS sum_ratings").Where("product_id = ?", id).First(&ratingsQuery).Error; err != nil{
 		fmt.Printf("error occured fetching average rating: %s", err)
 		return RatingsAverage{Average: 0, TotalRatings: 0}, err
+	}
+	if ratingsQuery.TotalRatings == 0 {
+		return RatingsAverage{Average: 0, TotalRatings: 0}, nil 
 	}
 	return RatingsAverage{Average: math.Round((ratingsQuery.SumRatings / float64(ratingsQuery.TotalRatings) * 100) / 100), TotalRatings: ratingsQuery.TotalRatings}, nil
 }
