@@ -1,6 +1,8 @@
 bases:
 - ../../base
 - ../../istio
+patchesStrategicMerge:
+- schema.yaml
 patchesJson6902:
 - target:
     group: ''
