@@ -14,7 +14,10 @@ spec:
         host: products-backend 
     corsPolicy:
       allowOrigin:
-      - http://products.demo.local
+      - http://$(FRONTEND_DOMAIN)
+      allowHeaders:
+      - 'Cache-Control'
+      - 'Content-Type'
       allowMethods:
       - GET
       - POST

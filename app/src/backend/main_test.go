@@ -36,8 +36,9 @@ func TestAPIIntegrationGetProduct(t *testing.T) {
 		"id":          "52c65bc6-4cc8-484b-afee-e03dfd5ebd12",
 		"name":        "AVACADO",
 		"title":       "Avocado",
-		"Description": "Fresh and perfectly ripe Avocadoes",
+		"description": "Fresh and perfectly ripe Avocadoes",
 		"image_url":   "avocado.png",
+		"ratings": models.RatingsAverage{TotalRatings: 13, Average: 1.1},
 	}
 	db.Init()
 	// Grab our router
@@ -48,14 +49,14 @@ func TestAPIIntegrationGetProduct(t *testing.T) {
 	// the request gives a 200
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Convert the JSON response to a map
-	var response map[string]string
+	var response models.ProductDetails
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	// Grab the value & whether or not it exists
-	value, exists := response["name"]
+	if err != nil {
+		t.Errorf("could not unmarshal response: %s", err)
+	}
 	// Make some assertions on the correctness of the response.
 	assert.Nil(t, err)
-	assert.True(t, exists)
-	assert.Equal(t, body["name"], value)
+	assert.Equal(t, body["name"], response.Name)
 }
 func TestAPIIntegrationListProducts(t *testing.T) {
 	// Build our expected body
@@ -89,7 +90,7 @@ func TestAPIIntegrationListRatings(t *testing.T) {
 	// the request gives a 200
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Convert the JSON response to a map
-	var response []models.Rating
+	var response []models.RatingSummary
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
@@ -138,13 +139,14 @@ func TestAPIIntegrationCreateRating(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	// Convert the JSON response to a map
-	var response models.Rating
+	var response models.RatingCreated 
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+		t.Errorf("failed to unmarshal response: %s", err)	
+	}
 
-	err = json.Unmarshal(w.Body.Bytes(), &response)
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
-	assert.Nil(t, err)
-	assert.Equal(t, response.Value, 1.1)
+	assert.NotNil(t, response)
 	performRequest(router, "DELETE", "/api/v1/ratings/"+response.ID.String())
 }
 
@@ -167,13 +169,14 @@ func TestAPIIntegrationDeleteRating(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	// Convert the JSON response to a map
-	var response models.Rating
+	var response models.RatingCreated 
 
-	err = json.Unmarshal(w.Body.Bytes(), &response)
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+		t.Errorf("failed to unmarshal response: %s", err)
+	}
 	// Grab the value & whether or not it exists
 	// Make some assertions on the correctness of the response.
-	assert.Nil(t, err)
-	assert.Equal(t, response.Value, 1.1)
+	assert.NotNil(t, response)
 	deleter := performRequest(router, "DELETE", "/api/v1/ratings/"+response.ID.String())
 
 	assert.Equal(t, http.StatusOK, deleter.Code)

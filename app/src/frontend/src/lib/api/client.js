@@ -1,4 +1,5 @@
 import axios from 'axios'
+import uuid from "uuid";
 const HEADERS_JSON_BASE = {
   'Content-Type': 'application/json',
   'Accept': 'application/json' 
@@ -17,6 +18,11 @@ export class ProductClient {
       headers: HEADERS_JSON_BASE,
       crossdomain: true
     })
+    this.ratingRequest = axios.create({
+      baseURL: this.config.ratingsBaseURL,
+      headers: HEADERS_JSON_BASE,
+      crossdomain: true
+    })
     this.imageRequest = axios.create({
       baseURL: this.config.imagesBaseURL,
       headers: HEADERS_IMG_BASE,
@@ -31,9 +37,19 @@ export class ProductClient {
   }
   getProduct (id, headers = {}) {
     return this.productRequest.get(`/${id}`, {
-      headers: { ...HEADERS_JSON_BASE, ...headers, },
+      headers: { ...HEADERS_JSON_BASE, ...headers, 'Cache-Control': 'no-cache'},
       crossdomain: true
     })
+  }
+  updateRating(id, rating, headers ={}) {
+    const payload = {
+      "product_id": id,
+      "value": rating
+    }
+    return this.ratingRequest.post(`/${id}`, payload, {
+      headers: { ...HEADERS_JSON_BASE, ...headers},
+      crossdomain: true
+    }) 
   }
   getImage (name, headers = {}) {
     return this.imageRequest.get(`/${name}`, {

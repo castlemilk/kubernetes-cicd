@@ -1,14 +1,16 @@
 bases:
-- ../../backend/overlays/non-prod
-- ../../frontend/overlays/non-prod
-- ../../postgres/overlays/non-prod
-namespace: default
+- ../../backend/overlays/non-production
+- ../../frontend/overlays/non-production
+- ../../postgres/overlays/non-production
+resources:
+- namespace.yaml
+namespace: np 
 commonAnnotations:
   context: demo-app
+  environment: non-production
 images:
   - name: products-backend
-    newName: gcr.io/kubernetes-cicd-246207/demo/backend
+    newName: gcr.io/kubernetes-cicd-246207/dev/backend
     newTag: latest 
   - name: products-frontend
-    newName: gcr.io/kubernetes-cicd-246207/demo/frontend
-    newTag: latest 
+    newName: gcr.io/kubernetes-cicd-246207/dev/frontend

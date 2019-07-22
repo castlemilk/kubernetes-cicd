@@ -1,0 +1,3 @@
+- op: replace
+  path: /spec/servers/0/hosts/0
+  value: api.prod.cicd.benebsworth.com

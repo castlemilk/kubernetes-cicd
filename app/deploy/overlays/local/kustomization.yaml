@@ -2,6 +2,9 @@ bases:
 - ../../backend/base
 - ../../frontend/base
 - ../../postgres/overlays/local
+resources:
+- namespace.yaml
+namespace: development
 patchesJson6902:
 - target:
     group: ''

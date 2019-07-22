@@ -1,0 +1,3 @@
+- op: replace
+  path: /spec/hosts/0
+  value: products.np.cicd.benebsworth.com

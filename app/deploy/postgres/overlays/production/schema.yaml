@@ -1,0 +1,42 @@
+apiVersion: v1
+data:
+  $patch: replace
+  0-bootstrap.sql: |-
+    CREATE USER demoz WITH PASSWORD '1234';
+    CREATE DATABASE products OWNER demoz ;
+    \connect products ;
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp" ;
+  1-products-schema.sql: |-
+    \connect products;
+    CREATE TABLE IF NOT EXISTS products (
+      ID           UUID PRIMARY KEY    NOT NULL  DEFAULT   uuid_generate_v4(),
+      name         varchar(30)          NOT NULL,
+      title        varchar(60)         NOT NULL,
+      descr        varchar(144)        NOT NULL,
+      image_url    varchar(256)        NOT NULL  DEFAULT   'defualt.png'
+    );
+    ALTER TABLE products OWNER TO demoz;
+  2-ratings-schema.sql: |-
+    \connect products;
+    CREATE TABLE IF NOT EXISTS ratings (
+      ID            UUID PRIMARY KEY    NOT NULL  DEFAULT uuid_generate_v4(),
+      product_id    UUID                references products(ID),
+      rating        double precision    NOT NULL,
+      posting_date  TIMESTAMP           NOT NULL  DEFAULT CURRENT_TIMESTAMP(2)
+    );
+    ALTER TABLE ratings OWNER TO demoz;
+  3-products-data.sql: |-
+    \connect products;
+    INSERT INTO products VALUES ('52c65bc6-4cc8-484b-afee-e03dfd5ebd12', 'AVACADO', 'Avocado','Fresh and perfectly ripe Avocadoes', 'avocado.png');
+    INSERT INTO products VALUES (DEFAULT, 'BACON', 'Bacon','Delicious Bacon, and VERY crispy', 'bacon.png');
+    INSERT INTO products VALUES (DEFAULT, 'CARROT', 'Carrot','Carrots, fresh from the farm, great for the eyes', 'carrot.png');
+    INSERT INTO products VALUES (DEFAULT, 'CHIPS', 'Chips','Yummy chippies, not too good for you though', 'chips.png');
+    INSERT INTO products VALUES (DEFAULT, 'EGGPLANT', 'Eggplant','Eggplant, part of the nightshade group', 'eggplant.png');
+    INSERT INTO products VALUES (DEFAULT, 'EGGS', 'Eggs','Sunny side up, just the way you may like them', 'eggs.png');
+    INSERT INTO products VALUES (DEFAULT, 'GRAPES', 'Grapes','Fresh Grapes, ensure to wash pre-use', 'grapes.png');
+    INSERT INTO products VALUES (DEFAULT, 'CRAB', 'Crab','Crabs from the atlantic coast', 'crabs.png');
+    INSERT INTO products VALUES (DEFAULT, 'HOT_DOG', 'Hot Dog','Hot Dog or not? Lorem ipsum dolor sit amet', 'hotdog.png');
+    INSERT INTO products VALUES (DEFAULT, 'CHICKEN', 'Chicken','Drumstick -  no mel stet mollis aliquip', 'chicken.png');
+kind: ConfigMap
+metadata:
+  name: bootstrap-scripts

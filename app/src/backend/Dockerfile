@@ -11,7 +11,6 @@ RUN mkdir /user && \
     echo 'nobody:x:65534:' > /user/group
 
 WORKDIR /backend
-RUN GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.17.1
 COPY go.mod .
 COPY go.sum .
 
@@ -34,7 +33,7 @@ COPY --from=builder /user/group /user/passwd /etc/
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=builder /backend/backend ./
-COPY assets ./
+COPY assets ./assets
 
 # Perform any further action as an unprivileged user.
 USER nobody:nobody

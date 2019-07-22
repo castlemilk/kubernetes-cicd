@@ -36,17 +36,17 @@ func GetProduct(c *gin.Context) {
 }
 // CreateProduct - Endpoint for creating a product
 func CreateProduct(c *gin.Context) {
-  var item models.ProductDetails
+  var product models.ProductDetails
   db := db.GetDB()
 
-  if err := c.BindJSON(&item); err != nil {
+  if err := c.BindJSON(&product); err != nil {
     c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
       "error": err.Error(),
     })
   }
-  resp, err := models.CreateProduct(db, item)
+  id, err := models.CreateProduct(db, product)
   if err != nil {
     c.AbortWithStatus(http.StatusInternalServerError)
 	} 
-  c.JSON(http.StatusOK, resp)
+  c.JSON(http.StatusOK, id)
 }

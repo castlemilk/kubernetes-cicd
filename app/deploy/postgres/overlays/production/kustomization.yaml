@@ -1,0 +1,18 @@
+bases:
+- ../../base
+- ../../istio
+patchesStrategicMerge:
+- schema.yaml
+patchesJson6902:
+- target:
+    group: ''
+    version: v1
+    kind: Service
+    name: postgres
+  path: service_patch.yaml
+- target:
+    group: apps
+    version: v1beta1
+    kind: Deployment
+    name: postgres 
+  path: add_istio_annotations.yaml

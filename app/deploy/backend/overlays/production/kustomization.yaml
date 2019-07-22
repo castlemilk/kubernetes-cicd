@@ -1,0 +1,22 @@
+bases:
+- ../../base
+- ../../istio
+patchesJson6902:
+- target:
+    group: apps
+    version: v1beta1
+    kind: Deployment
+    name: products-backend
+  path: add_istio_annotations.yaml
+- target:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: VirtualService
+    name: products-backend
+  path: patch_backend_virtualservice.yaml
+- target:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: Gateway
+    name: products-backend
+  path: patch_backend_gateway.yaml

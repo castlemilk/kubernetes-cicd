@@ -21,19 +21,44 @@ profiles:
     deploy:
       kustomize:
           path: deploy/overlays/local
+          flags:
+            global:
+            - '-n=development'
   - name: remote-development
+    build:
+      artifacts:
+        - image: gcr.io/kubernetes-cicd-246207/dev/backend
+          context: src/backend
+        - image: gcr.io/kubernetes-cicd-246207/dev/frontend
+          context: src/frontend
+      tagPolicy:
+        envTemplate:
+          template: "{{.IMAGE_NAME}}:latest"
     deploy:
       kustomize:
-          path: deploy/overlays/non-prod
+          path: deploy/overlays/non-production
+          flags:
+            global:
+            - '-n=np'
   - name: non-production
     deploy:
       kustomize:
-          path: deploy/overlays/non-prod
+          path: deploy/overlays/non-production
+          flags:
+            global:
+            - '-n=np'
+  - name: production
+    deploy:
+      kustomize:
+          path: deploy/overlays/production
+          flags:
+            global:
+            - '-n=prod'
   - name: ci-postgres
     build: {}
     deploy:
       kustomize:
-        path: deploy/postgres/overlays/non-prod-ci
+        path: deploy/postgres/overlays/ci
         flags:
           global:
           - '-n=tekton-pipelines'

@@ -43,7 +43,9 @@ class ProductCatalogue extends React.Component {
                 lastUpdated={this.props.lastUpdated}
                 imagesBaseURL={`${productAPIConfig(window).imagesBaseURL}`}
                 key={id}
-                fetch={this.props.getProduct(id)}
+                id={id}
+                fetch={(id) => this.props.getProduct(id)}
+                updateRating={(id, value) => this.props.updateRating(id, value)}
         />) : <CircularProgress className={classes.progress} />}</ProductCatalogueWrapper>)
     }
 }
