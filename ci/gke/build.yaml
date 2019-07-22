@@ -163,6 +163,15 @@ spec:
     - '-mod=vendor'
     - '-run=Integration'
     - '-v'
+  - name: destroy-postgres
+    image: gcr.io/k8s-skaffold/skaffold
+    workingDir: ${inputs.params.workingDir}
+    command:
+    - skaffold
+    args:
+    - 'delete'
+    - '-p'
+    - 'ci-postgres'
   - name: update-status-success
     image: castlemilk/curl
     command:
@@ -242,6 +251,9 @@ spec:
       - name: destinationRegistry
         description: The registry to store the given build artifact
         default: gcr.io/kubernetes-cicd-246207/demo/default
+      - name: context
+        description: the github statuses context to reference for updating once build completes
+        default: Build
   outputs:
     resources:
       - name: builtImage
@@ -271,7 +283,7 @@ spec:
       curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
         -H 'Content-Type: application/json' \
         -X POST \
-        -d '{"state": "success", "description": "Tekton", "context": "Build","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+        -d '{"state": "success", "description": "Tekton", "context": "${inputs.params.context}","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
@@ -311,6 +323,8 @@ spec:
       - name: workspace
         resource: git-source
   - name: test-backend
+    runAfter:
+    - init-statuses
     taskRef:
       name: backend-unit-tests
     params:
@@ -321,6 +335,8 @@ spec:
       - name: workspace
         resource: git-source
   - name: lint-backend
+    runAfter:
+    - init-statuses
     taskRef:
       name: backend-linting
     params:
@@ -330,10 +346,34 @@ spec:
       inputs:
       - name: workspace
         resource: git-source
+  - name: build-frontend
+    taskRef:
+      name: webhook-build-push
+    params:
+      - name: appName
+        value: frontend
+      - name: imageTag
+        value: ${params.image-tag}
+      - name: destinationRegistry
+        value: ${params.docker-registry}
+      - name: pathToDockerFile
+        value: /workspace/workspace/app/src/frontend/Dockerfile
+      - name: pathToContext
+        value: /workspace/workspace/app/src/frontend
+      - name: context
+        value: BuildFrontend
+    resources:
+      inputs:
+      - name: workspace
+        resource: git-source 
+      outputs:
+      - name: builtImage
+        resource: docker-image
   - name: build-backend
     runAfter:
     - lint-backend
     - test-backend
+    - integration-test-backend
     taskRef:
       name: webhook-build-push
     params:
@@ -347,6 +387,8 @@ spec:
         value: /workspace/workspace/app/src/backend/Dockerfile
       - name: pathToContext
         value: /workspace/workspace/app/src/backend
+      - name: context
+        value: BuildBackend
     resources:
       inputs:
       - name: workspace

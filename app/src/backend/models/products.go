@@ -21,7 +21,9 @@ type ProductDetails struct { // table name: products
 	Title					string					`json:"title" binding:"required"`
 	Description 	string					`json:"description" gorm:"column:descr" binding:"required"`
 	ImageURL			string					`json:"image_url" binding:"required"`
+	// ----------------- ENABLE_RATING --------------------
 	Ratings				RatingsAverage	`json:"ratings" gorm:"-"`
+	// ----------------------------------------------------
 }
 
 // Product - main interface which surfaces available query methods
@@ -63,10 +65,7 @@ func GetProductRatings(db *gorm.DB, ID string) (RatingsAverage, error) {
 	if ratingsQuery.TotalRatings == 0 {
 		return RatingsAverage{Average: 0, TotalRatings: 0}, nil 
 	}
-	averageRaw := ratingsQuery.SumRatings / float64(ratingsQuery.TotalRatings)
-	fmt.Printf("averageRaw: %f", averageRaw)
 	average := math.Round((ratingsQuery.SumRatings / float64(ratingsQuery.TotalRatings)) * 100) / 100
-	fmt.Printf("-- rounded -->  %f", average)
 	return RatingsAverage{Average: average, TotalRatings: ratingsQuery.TotalRatings}, nil
 }
 

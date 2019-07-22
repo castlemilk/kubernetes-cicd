@@ -11,6 +11,8 @@ PROJECT_ID=kubernetes-cicd-246207
 ISTIO_VERSION=1.1.9
 KNATIVE_VERSION=0.6.1
 BASE_ZONE=cicd.benebsworth.com
+NP_ZONE=np.cicd.benebsworth.com
+PROD_ZONE=prod.cicd.benebsworth.com
 DEFAULT_ZONE=default.cicd.benebsworth.com
 TEKTON_ZONE=tekton-pipelines.cicd.benebsworth.com
 TEKTON_PIPELINE_VERSION=v0.5.2
@@ -49,6 +51,13 @@ local.cluster.create:
   --disk-size=30g \
   --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"
 	minikube addons enable registry
+local.dev.cluster.create:
+	minikube start --memory=4000 --cpus=3 \
+  --kubernetes-version=v1.15.0 \
+  --vm-driver=hyperkit \
+  --disk-size=30g \
+  --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"
+
 gke.cluster.create:
 	time gcloud beta container clusters create kubernetes-cicd \
 		--zone="australia-southeast1-a" \
@@ -67,8 +76,8 @@ gke.cluster.resume:
 	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 3
 	gcloud container clusters get-credentials kubernetes-cicd
 	sleep 30
-	k scale deployment -n knative-serving webhook --replicas 2
-	k scale deployment -n knative-serving webhook --replicas 1
+	kubectl scale deployment -n knative-serving webhook --replicas 2
+	kubectl scale deployment -n knative-serving webhook --replicas 1
 gke.cluster.delete:
 	gcloud beta container clusters delete kubernetes-cicd --zone="australia-southeast1-a"
 ## configure DNS settings for IP assigned to ingress-gateway
@@ -76,15 +85,28 @@ gke.dns.update:
 	@gcloud dns managed-zones create kubernetes-cicd --no-user-output-enabled --dns-name ${BASE_ZONE} --description="base zone" > /dev/null 2>&1 || echo " ✅   base zone ${BASE_ZONE} already exists"
 	@gcloud dns managed-zones create default-namespace --no-user-output-enabled --dns-name ${DEFAULT_ZONE} --description="default namespace zone" > /dev/null 2>&1 || echo " ✅   default zone ${DEFAULT_ZONE} already exists"
 	@gcloud dns managed-zones create tekton-namespace --no-user-output-enabled --dns-name ${TEKTON_ZONE} --description="tekton namespace zone" > /dev/null 2>&1 || echo " ✅  tekton zone ${TEKTON_ZONE} already exists"
+	@gcloud dns managed-zones create non-prod-namespace --no-user-output-enabled --dns-name ${NP_ZONE} --description="tekton non-prod zone" > /dev/null 2>&1 || echo " ✅  tekton zone ${NP_ZONE} already exists"
+	@gcloud dns managed-zones create prod-namespace --no-user-output-enabled --dns-name ${PROD_ZONE} --description="tekton production zone" > /dev/null 2>&1 || echo " ✅  tekton zone ${PROD_ZONE} already exists"
+	rm -rf transaction.yaml
 	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
 	gcloud dns record-sets transaction start --zone="default-namespace"; \
-	gcloud dns record-sets transaction add $$GATEWAY_IP. --name "*.${DEFAULT_ZONE}" --ttl=5 --type=A --zone="default-namespace"; \
+	gcloud dns record-sets transaction add $$GATEWAY_IP --name "*.${DEFAULT_ZONE}." --ttl=5 --type=A --zone="default-namespace"; \
 	gcloud dns record-sets transaction execute --zone="default-namespace" > /dev/null 2>&1 || echo " ✅   recordsets for ${DEFAULT_ZONE} already exists" 
 	rm -rf transaction.yaml
 	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
 	gcloud dns record-sets transaction start --zone="tekton-namespace"; \
-	gcloud dns record-sets transaction add $$GATEWAY_IP. --name "*.${TEKTON_ZONE}" --ttl=5 --type=A --zone="tekton-namespace"; \
-	gcloud dns record-sets transaction execute --zone="tekton-namespace" || echo " ✅   recordsets for ${TEKTON_ZONE} already exists" 
+	gcloud dns record-sets transaction add $$GATEWAY_IP --name "*.${TEKTON_ZONE}." --ttl=5 --type=A --zone="tekton-namespace"; \
+	gcloud dns record-sets transaction execute --zone="tekton-namespace" > /dev/null 2>&1 || echo " ✅   recordsets for ${TEKTON_ZONE} already exists" 
+	rm -rf transaction.yaml
+	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
+	gcloud dns record-sets transaction start --zone="non-prod-namespace"; \
+	gcloud dns record-sets transaction add $$GATEWAY_IP --name "*.${NP_ZONE}." --ttl=5 --type=A --zone="non-prod-namespace"; \
+	gcloud dns record-sets transaction execute --zone="non-prod-namespace" > /dev/null 2>&1 || echo " ✅   recordsets for ${NP_ZONE} already exists"
+	rm -rf transaction.yaml
+	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
+	gcloud dns record-sets transaction start --zone="prod-namespace"; \
+	gcloud dns record-sets transaction add $$GATEWAY_IP --name "*.${PROD_ZONE}." --ttl=5 --type=A --zone="prod-namespace"; \
+	gcloud dns record-sets transaction execute --zone="prod-namespace" > /dev/null 2>&1 || echo " ✅   recordsets for ${PROD_ZONE} already exists" 
 
 local.cluster.patch:
 	minikube addons enable registry
@@ -246,6 +268,25 @@ run.webapp:
 run.slides:
 	cd slides; npm run start
 
+
+## start local development
+local.dev:
+	# skaffold deploy -p local-development 
+	# sudo minikube tunnel
+	@kubectl wait -n development deployment products-backend --for condition=available
+	@BACKEND_ADDRESS=`kubectl get svc products-backend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
+	if grep -i "api.demo.local" /etc/hosts; then \
+		sudo sed -i -e "s/.*api.demo.local/$$BACKEND_ADDRESS api.demo.local/" /etc/hosts; \
+	else \
+		echo "$$BACKEND_ADDRESS api.demo.local" | sudo tee -a /etc/hosts; \
+	fi
+	@FRONTEND_ADDRESS=`kubectl get svc products-frontend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
+	if grep -i "products.demo.local" /etc/hosts; then \
+		sudo sed -i -e "s/.*products.demo.local/$$FRONTEND_ADDRESS products.demo.local/" /etc/hosts; \
+	else \
+		echo "$$FRONTEND_ADDRESS products.demo.local" | sudo tee -a /etc/hosts; \
+	fi
+	open http://products.demo.local
 ## install tekton to target cluster
 tekton.install:
 	kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user ben.ebsworth@digio.com.au --dry-run -o yaml | kubectl apply -f -

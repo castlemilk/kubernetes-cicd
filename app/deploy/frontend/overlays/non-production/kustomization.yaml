@@ -1,0 +1,25 @@
+bases:
+- ../../base
+- ../../istio
+namespace: np
+patchesStrategicMerge:
+- env.yaml
+patchesJson6902:
+- target:
+    group: apps
+    version: v1beta1
+    kind: Deployment
+    name: products-frontend
+  path: add_istio_annotations.yaml
+- target:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: VirtualService
+    name: products-frontend
+  path: patch_frontend_virtualservice.yaml
+- target:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: Gateway
+    name: products-frontend 
+  path: patch_frontend_gateway.yaml

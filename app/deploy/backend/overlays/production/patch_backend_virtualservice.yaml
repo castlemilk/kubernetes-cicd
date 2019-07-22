@@ -1,0 +1,6 @@
+- op: replace
+  path: /spec/hosts/0
+  value: api.prod.cicd.benebsworth.com
+- op: replace
+  path: /spec/http/0/corsPolicy/allowOrigin/0
+  value: http://products.prod.cicd.benebsworth.com

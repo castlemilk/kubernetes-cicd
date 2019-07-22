@@ -1,6 +1,9 @@
 bases:
 - ../../base
 - ../../istio
+namespace: prod
+patchesStrategicMerge:
+- env.yaml
 patchesJson6902:
 - target:
     group: apps
