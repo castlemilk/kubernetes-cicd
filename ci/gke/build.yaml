@@ -469,6 +469,9 @@ spec:
       - name: workspace
         resource: git-source
   - name: deploy-products
+    runAfter:
+    - build-backend
+    - build-frontend
     taskRef:
       name: deploy-products
     params:
