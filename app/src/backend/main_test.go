@@ -36,8 +36,9 @@ func TestAPIIntegrationGetProduct(t *testing.T) {
 		"id":          "52c65bc6-4cc8-484b-afee-e03dfd5ebd12",
 		"name":        "AVACADO",
 		"title":       "Avocado",
-		"Description": "Fresh and perfectly ripe Avocadoes",
+		"description": "Fresh and perfectly ripe Avocadoes",
 		"image_url":   "avocado.png",
+		"ratings": models.RatingsAverage{TotalRatings: 13, Average: 1.1},
 	}
 	db.Init()
 	// Grab our router
@@ -48,14 +49,14 @@ func TestAPIIntegrationGetProduct(t *testing.T) {
 	// the request gives a 200
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Convert the JSON response to a map
-	var response map[string]string
+	var response models.ProductDetails
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	// Grab the value & whether or not it exists
-	value, exists := response["name"]
+	if err != nil {
+		t.Errorf("could not unmarshal response: %s", err)
+	}
 	// Make some assertions on the correctness of the response.
 	assert.Nil(t, err)
-	assert.True(t, exists)
-	assert.Equal(t, body["name"], value)
+	assert.Equal(t, body["name"], response.Name)
 }
 func TestAPIIntegrationListProducts(t *testing.T) {
 	// Build our expected body

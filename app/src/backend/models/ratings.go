@@ -18,6 +18,16 @@ type RatingSummary struct { // table name: ratings
 	ProductID   uuid.UUID				`json:"product_id" binding:"required"`
 }
 
+type RatingsAverageQuery struct {
+	TotalRatings	int							`gorm:"total_ratings"`
+	SumRatings		float64					`gorm:"sum_ratings"`
+}
+
+type RatingsAverage struct {
+	TotalRatings	int							`json:"total_ratings"`
+	Average				float64					`json:"average_rating"`
+}
+
 // RatingCreated "Object"
 type RatingCreated struct {
 	ID 					uuid.UUID 			`json:"id"` 
@@ -26,6 +36,7 @@ type RatingCreated struct {
 // RatingDetails "Object"
 type RatingDetails struct { // table name: ratings
 	ID          uuid.UUID `json:"id"`
+	ProductID   uuid.UUID				`json:"product_id" binding:"required"`
 	Value       float64    `gorm:"column:rating" binding:"required"`
 	CreatedAt 	time.Time `gorm:"column:posting_date" binding:"required"`
 }
