@@ -1,0 +1,499 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: git-source
+spec:
+  type: git
+  params:
+  - name: revision
+    value: master
+  - name: url
+    value: https://github.com/castlemilk/kubernetes-cicd
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: default-cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: tekton-pipelines
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+# apiVersion: tekton.dev/v1alpha1
+# kind: PipelineResource
+# metadata:
+#   name: frontend-image
+# spec:
+#   type: image
+#   params:
+#     - name: url
+#       value: gcr.io/_PROJECT_ID/demo/frontend
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: docker-image
+spec:
+  type: image
+  params:
+  - name: url
+    value: gcr.io/_PROJECT_ID/demo/backend
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: update-statuses
+spec:
+  inputs:
+    resources:
+    - name: workspace
+      type: git
+  steps:
+  - name: init-all
+    image: castlemilk/curl
+    command:
+    - /bin/sh
+    args:
+    - '-c'
+    - |
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "pending", "description": "Tekton", "context": "BuildBackend","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "pending", "description": "Tekton", "context": "BuildFrontend","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "pending", "description": "Tekton", "context": "Linting","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "pending", "description": "Tekton", "context": "UnitTests","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "pending", "description": "Tekton", "context": "IntegrationTests","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: backend-linting
+spec:
+  inputs:
+    resources:
+    - name: workspace
+      type: git
+    params:
+    - name: workingDir
+      description: working directory where src files live
+      default: /workspace/workspace/app/src/backend
+  steps:
+  - name: run-linting
+    image: golangci/golangci-lint
+    workingDir: ${inputs.params.workingDir}
+    args:
+    - 'run'
+    - './...'
+    - '--config'
+    - './.golangci.yaml'
+    - '-v'
+  - name: update-status-success
+    image: castlemilk/curl
+    command:
+    - /bin/sh
+    args:
+    - '-c'
+    - |
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "success", "description": "Tekton", "context": "Linting","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: backend-integration-tests
+spec:
+  inputs:
+    resources:
+    - name: workspace
+      type: git
+    params:
+    - name: workingDir
+      description: working directory where src files live
+      default: /workspace/workspace/app/
+  steps:
+  - name: deploy-postgres
+    image: gcr.io/k8s-skaffold/skaffold
+    workingDir: ${inputs.params.workingDir}
+    command:
+    - skaffold
+    args:
+    - 'deploy'
+    - '-p'
+    - 'ci-postgres'
+  - name: wait-for-postgres
+    image: gcr.io/k8s-skaffold/skaffold
+    workingDir: ${inputs.params.workingDir}
+    command:
+    - kubectl
+    args:
+    - '-n'
+    - 'tekton-pipelines'
+    - 'wait'
+    - 'deployment/postgres-ci'
+    - '--for'
+    - 'condition=available'
+  - name: integration-tests
+    image: golang
+    env:
+    - name: GO111MODULE
+      value: "on"
+    - name: PG_HOST
+      value: postgres-ci
+    workingDir: ${inputs.params.workingDir}/src/backend
+    command:
+    - go
+    args:
+    - 'test'
+    - './...'
+    - '-mod=vendor'
+    - '-run=Integration'
+    - '-v'
+  - name: destroy-postgres
+    image: gcr.io/k8s-skaffold/skaffold
+    workingDir: ${inputs.params.workingDir}
+    command:
+    - skaffold
+    args:
+    - 'delete'
+    - '-p'
+    - 'ci-postgres'
+  - name: update-status-success
+    image: castlemilk/curl
+    command:
+    - /bin/sh
+    args:
+    - '-c'
+    - |
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "success", "description": "Tekton", "context": "IntegrationTests","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: backend-unit-tests
+spec:
+  inputs:
+    resources:
+    - name: workspace
+      type: git
+    params:
+    - name: workingDir
+      description: working directory where src files live
+      default: /workspace/workspace/app/src/backend
+  steps:
+  - name: run-tests
+    image: golang
+    env:
+    - name: GO111MODULE
+      value: "on" 
+    workingDir: ${inputs.params.workingDir}
+    command:
+    - go
+    args:
+    - 'test'
+    - './...'
+    - '-mod=vendor'
+    - '-run=Unit'
+    - '-v'
+  - name: update-status-success
+    image: castlemilk/curl
+    command:
+    - /bin/sh
+    args:
+    - '-c'
+    - |
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "success", "description": "Tekton", "context": "UnitTests","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: deploy-products
+spec:
+  inputs:
+    resources:
+    - name: workspace
+      type: git
+    params:
+    - name: workingDir
+      description: working directory where src files live
+      default: /workspace/workspace/app/
+  steps:
+  - name: deploy-postgres
+    image: gcr.io/k8s-skaffold/skaffold
+    workingDir: ${inputs.params.workingDir}
+    command:
+    - skaffold
+    args:
+    - 'deploy'
+    - '-p'
+    - 'prod-postgres'
+  - name: wait-for-postgres
+    image: gcr.io/k8s-skaffold/skaffold
+    workingDir: ${inputs.params.workingDir}
+    command:
+    - kubectl
+    args:
+    - '-n'
+    - 'prod'
+    - 'wait'
+    - 'deployment/postgres'
+    - '--for'
+    - 'condition=available'
+  - name: deploy-products
+    image: gcr.io/k8s-skaffold/skaffold
+    workingDir: ${inputs.params.workingDir}
+    command:
+    - skaffold
+    args:
+    - 'deploy'
+    - '-p'
+    - 'production'
+  - name: update-status-success
+    image: castlemilk/curl
+    command:
+    - /bin/sh
+    args:
+    - '-c'
+    - |
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "success", "description": "Tekton", "context": "Deploy","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+---
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: webhook-build-push
+spec:
+  inputs:
+    resources:
+      - name: workspace
+        type: git
+    params:
+      - name: appName
+        description: name of the app being build
+        default: demo-app
+      - name: pathToDockerFile
+        description: The path to the dockerfile to build
+        default: /workspace/workspace/Dockerfile
+      - name: pathToContext
+        description:
+          The build context used by Kaniko
+          (https://github.com/GoogleContainerTools/kaniko#kaniko-build-contexts)
+        default: /workspace/workspace
+      - name: imageTag
+        description: tag for the given build artifact
+        default: latest
+      - name: destinationRegistry
+        description: The registry to store the given build artifact
+        default: gcr.io/kubernetes-cicd-246207/demo/default
+      - name: context
+        description: the github statuses context to reference for updating once build completes
+        default: Build
+  outputs:
+    resources:
+      - name: builtImage
+        type: image
+  steps:
+  - name: build-and-push
+    image: gcr.io/kaniko-project/executor:v0.10.0
+    env:
+    - name: "DOCKER_CONFIG"
+      value: "/builder/home/.docker/"
+    command:
+      - /kaniko/executor
+    args:
+      - --dockerfile=${inputs.params.pathToDockerFile}
+      - --destination=${inputs.params.destinationRegistry}/${inputs.params.appName}:${inputs.params.imageTag}
+      - --destination=${inputs.params.destinationRegistry}/${inputs.params.appName}:latest
+      - --context=${inputs.params.pathToContext}
+      - --cache=true
+      - --cache-repo=${inputs.params.destinationRegistry}/${inputs.params.appName}
+      - --insecure
+  - name: update-status-success
+    image: castlemilk/curl
+    command:
+    - /bin/sh
+    args:
+    - '-c'
+    - |
+      curl 'https://api.github.com/repos/castlemilk/kubernetes-cicd/statuses/${inputs.resources.workspace.revision}?access_token=_GITHUB_STATUS_TOKEN' \
+        -H 'Content-Type: application/json' \
+        -X POST \
+        -d '{"state": "success", "description": "Tekton", "context": "${inputs.params.context}","target_url": "http://tekton-dashboard.tekton-pipelines.cicd.benebsworth.com/#/namespaces/tekton-pipelines/pipelineruns"}'
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: cicd-pipeline
+spec:
+  params:
+    - name: image-tag
+      description: tag associated with trigger event (maps to a commit SHA)
+      default: latest
+    - name: image-name
+      description: name of the given image to build (not used for mono-repo)
+      default: gcr.io/kubernetes-cicd-246207/demo/kubernetes-cicd
+    - name: release-name
+      description: name of the release if found
+      default: kubernetes-cicd
+    - name: repository-name
+      description: name of the repository that the webhook corresponds to
+      default: kubernetes-cicd
+    - name: target-namespace
+      description: namespace to deploy workloads to
+      default: tekton-pipelines
+    - name: docker-registry
+      description: docker registry base path
+      default: gcr.io/kubernetes-cicd-246207/demo
+  resources:
+  - name: git-source
+    type: git
+  - name: docker-image
+    type: image
+  tasks:
+  - name: init-statuses
+    taskRef:
+      name: update-statuses
+    resources:
+      inputs:
+      - name: workspace
+        resource: git-source
+  - name: test-backend
+    runAfter:
+    - init-statuses
+    taskRef:
+      name: backend-unit-tests
+    params:
+      - name: workingDir
+        value: /workspace/workspace/app/src/backend
+    resources:
+      inputs:
+      - name: workspace
+        resource: git-source
+  - name: lint-backend
+    runAfter:
+    - init-statuses
+    taskRef:
+      name: backend-linting
+    params:
+      - name: workingDir
+        value: /workspace/workspace/app/src/backend
+    resources:
+      inputs:
+      - name: workspace
+        resource: git-source
+  - name: build-frontend
+    taskRef:
+      name: webhook-build-push
+    params:
+      - name: appName
+        value: frontend
+      - name: imageTag
+        value: ${params.image-tag}
+      - name: destinationRegistry
+        value: ${params.docker-registry}
+      - name: pathToDockerFile
+        value: /workspace/workspace/app/src/frontend/Dockerfile
+      - name: pathToContext
+        value: /workspace/workspace/app/src/frontend
+      - name: context
+        value: BuildFrontend
+    resources:
+      inputs:
+      - name: workspace
+        resource: git-source 
+      outputs:
+      - name: builtImage
+        resource: docker-image
+  - name: build-backend
+    runAfter:
+    - lint-backend
+    - test-backend
+    - integration-test-backend
+    taskRef:
+      name: webhook-build-push
+    params:
+      - name: appName
+        value: backend
+      - name: imageTag
+        value: ${params.image-tag}
+      - name: destinationRegistry
+        value: ${params.docker-registry}
+      - name: pathToDockerFile
+        value: /workspace/workspace/app/src/backend/Dockerfile
+      - name: pathToContext
+        value: /workspace/workspace/app/src/backend
+      - name: context
+        value: BuildBackend
+    resources:
+      inputs:
+      - name: workspace
+        resource: git-source 
+      outputs:
+      - name: builtImage
+        resource: docker-image
+  - name: integration-test-backend
+    taskRef:
+      name: backend-integration-tests
+    params:
+      - name: workingDir
+        value: /workspace/workspace/app/
+    resources:
+      inputs:
+      - name: workspace
+        resource: git-source
+  - name: deploy-products
+    runAfter:
+    - build-backend
+    - build-frontend
+    taskRef:
+      name: deploy-products
+    params:
+      - name: workingDir
+        value: /workspace/workspace/app/
+    resources:
+      inputs:
+      - name: workspace
+        resource: git-source
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineRun
+metadata:
+  name: cicd-pipeline-run-1
+spec:
+  serviceAccount: 'default'
+  pipelineRef:
+    name: cicd-pipeline
+  resources:
+  - name: git-source
+    resourceRef:
+      name: git-source
+  - name: docker-image
+    resourceRef:
+      name: docker-image
