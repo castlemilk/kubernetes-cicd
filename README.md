@@ -35,3 +35,30 @@ For the management of Kubernetes resources, kustomize provides a template-free m
 <img width=86 height=86 align="left" src="docs/assets/kaniko.png"> 
 
 Kaniko enables the build of OCI compliant containers without using the Docker daemon. The Kaniko executor also runs in user-space, avoiding privileged escalation, normally required for a Docker daemon based build. As Kaniko is just a binary tool, we can run it within a Kubernetes cluster with ease.
+
+### Istio
+
+<img width=86 height=86 align="left" src="docs/assets/istio.png"> 
+
+Istio is a control-plane orcestration framework for Envoy, this forms what is commonly referred to as a "Service Mesh". Providing a mechanism for transparently enabled mTLS, service resiliency, observability, and enhanced authn/authz controls on a per-microservice basis.
+
+### GKE
+
+<img width=86 height=86 align="left" src="docs/assets/gke.png"> 
+
+GKE (Google Kubernetes Engine) provides our Kubernetes cluster for remote development and testing, as well as production deployments. One of the cool things demonstrated in this repository in a nice feature of effectively "pausing" and "resuming" your cluster, where during the paused state, you don't pay for the compute nodes!
+
+## Future Work
+
+Over time it would be great to extend the range of pipelines available to include other tooling to enable a robust feature comparison and understanding when evaludating trace-offs and technology choice best-fit for the given environment. Some extra features to add would be:
+
+* ArgoCD based CI/CD pipelines, including canary releases and rollbacks
+* More pathways for demonstrating the istio capabilities around observability, service resiliency and security
+* More sophisticated full-stack applications including but not limited to:
+  * message queue integration (kafka, NATS)
+  * redis, mongoDB and other storage solutions
+  * additional protocols such as gRPC, Thrift et al.
+  * Add additional workflows as the feature sets are extended for Tekton, these include:
+    * pipeline conditionals
+    * extended git-triggering
+    * utilise comments for git-ops workflows
