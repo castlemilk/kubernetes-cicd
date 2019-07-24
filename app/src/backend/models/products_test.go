@@ -7,7 +7,6 @@ import (
 	"testing"
 	"regexp"
 	"backend/db"
-
 )
 func TestCreateProductsUnit(t *testing.T) {
 	sdb, mock, err := sqlmock.New()

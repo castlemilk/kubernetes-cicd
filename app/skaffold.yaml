@@ -24,6 +24,10 @@ profiles:
           flags:
             global:
             - '-n=development'
+    activation:
+    - env: ENV=local
+      kubeContext: minikube
+      command: dev
   - name: local-postgres
     deploy:
       kustomize:
@@ -31,7 +35,10 @@ profiles:
           flags:
             global:
             - '-n=development'
-  - name: remote-development
+  - name: staging
+    activation:
+    - env: ENV=staging
+      kubeContext: gke_kubernetes-cicd-246207_australia-southeast1-a_kubernetes-cicd
     build:
       artifacts:
         - image: gcr.io/kubernetes-cicd-246207/dev/backend
@@ -77,3 +84,4 @@ profiles:
         flags:
           global:
           - '-n=tekton-pipelines'
+
