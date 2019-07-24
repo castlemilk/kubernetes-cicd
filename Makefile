@@ -80,6 +80,9 @@ local.dev:
 	fi
 	open http://products.demo.local
 
+staging.dev:
+	cd app; ENV=staging skaffold dev -p staging
+	open http://products.np.cicd.benebsworth.com
 ## create localubernetes cluster
 local.cluster.create:
 	minikube start --memory=13000 --cpus=7 \
