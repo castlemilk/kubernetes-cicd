@@ -482,18 +482,18 @@ spec:
       - name: workspace
         resource: git-source
 ---
-# apiVersion: tekton.dev/v1alpha1
-# kind: PipelineRun
-# metadata:
-#   name: cicd-pipeline-run-1
-# spec:
-#   serviceAccount: 'default'
-#   pipelineRef:
-#     name: cicd-pipeline
-#   resources:
-#   - name: git-source
-#     resourceRef:
-#       name: git-source
-#   - name: docker-image
-#     resourceRef:
-#       name: docker-image
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineRun
+metadata:
+  name: cicd-pipeline-run-1
+spec:
+  serviceAccount: 'default'
+  pipelineRef:
+    name: cicd-pipeline
+  resources:
+  - name: git-source
+    resourceRef:
+      name: git-source
+  - name: docker-image
+    resourceRef:
+      name: docker-image

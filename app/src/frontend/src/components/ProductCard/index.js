@@ -129,7 +129,6 @@ class ProductCard extends React.Component {
     this.props.updateRating(this.props.id, value);
     setTimeout(() => {
       this.props.fetch(this.props.id).then(result => {
-        console.log(result);
         this.setState({
           data: result.data,
         });

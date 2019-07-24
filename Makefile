@@ -43,6 +43,43 @@ endif
 ## initialise project environment
 init:
 
+
+open.local:
+	@BACKEND_ADDRESS=`kubectl get svc products-backend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
+	if grep -i "api.demo.local" /etc/hosts; then \
+		sudo sed -i -e "s/.*api.demo.local/$$BACKEND_ADDRESS api.demo.local/" /etc/hosts; \
+	else \
+		echo "$$BACKEND_ADDRESS api.demo.local" | sudo tee -a /etc/hosts; \
+	fi
+	@FRONTEND_ADDRESS=`kubectl get svc products-frontend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
+	if grep -i "products.demo.local" /etc/hosts; then \
+		sudo sed -i -e "s/.*products.demo.local/$$FRONTEND_ADDRESS products.demo.local/" /etc/hosts; \
+	else \
+		echo "$$FRONTEND_ADDRESS products.demo.local" | sudo tee -a /etc/hosts; \
+	fi
+	open http://products.demo.local
+
+## start local development
+local.dev:
+	eval $(minikube docker-env)
+	skaffold build -p local
+	skaffold deploy -p local
+	# sudo minikube tunnel
+	@kubectl wait -n development deployment products-backend --for condition=available
+	@BACKEND_ADDRESS=`kubectl get svc products-backend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
+	if grep -i "api.demo.local" /etc/hosts; then \
+		sudo sed -i -e "s/.*api.demo.local/$$BACKEND_ADDRESS api.demo.local/" /etc/hosts; \
+	else \
+		echo "$$BACKEND_ADDRESS api.demo.local" | sudo tee -a /etc/hosts; \
+	fi
+	@FRONTEND_ADDRESS=`kubectl get svc products-frontend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
+	if grep -i "products.demo.local" /etc/hosts; then \
+		sudo sed -i -e "s/.*products.demo.local/$$FRONTEND_ADDRESS products.demo.local/" /etc/hosts; \
+	else \
+		echo "$$FRONTEND_ADDRESS products.demo.local" | sudo tee -a /etc/hosts; \
+	fi
+	open http://products.demo.local
+
 ## create localubernetes cluster
 local.cluster.create:
 	minikube start --memory=13000 --cpus=7 \
@@ -269,24 +306,7 @@ run.slides:
 	cd slides; npm run start
 
 
-## start local development
-local.dev:
-	# skaffold deploy -p local-development 
-	# sudo minikube tunnel
-	@kubectl wait -n development deployment products-backend --for condition=available
-	@BACKEND_ADDRESS=`kubectl get svc products-backend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
-	if grep -i "api.demo.local" /etc/hosts; then \
-		sudo sed -i -e "s/.*api.demo.local/$$BACKEND_ADDRESS api.demo.local/" /etc/hosts; \
-	else \
-		echo "$$BACKEND_ADDRESS api.demo.local" | sudo tee -a /etc/hosts; \
-	fi
-	@FRONTEND_ADDRESS=`kubectl get svc products-frontend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
-	if grep -i "products.demo.local" /etc/hosts; then \
-		sudo sed -i -e "s/.*products.demo.local/$$FRONTEND_ADDRESS products.demo.local/" /etc/hosts; \
-	else \
-		echo "$$FRONTEND_ADDRESS products.demo.local" | sudo tee -a /etc/hosts; \
-	fi
-	open http://products.demo.local
+
 ## install tekton to target cluster
 tekton.install:
 	kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user ben.ebsworth@digio.com.au --dry-run -o yaml | kubectl apply -f -

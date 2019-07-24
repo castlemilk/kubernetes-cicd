@@ -8,6 +8,12 @@ namespace: np
 commonAnnotations:
   context: demo-app
   environment: non-production
+vars:
+- name: POSTGRES_SERVICE
+  objref:
+    kind: Service
+    name: postgres
+    apiVersion: v1
 images:
   - name: products-backend
     newName: gcr.io/kubernetes-cicd-246207/dev/backend
