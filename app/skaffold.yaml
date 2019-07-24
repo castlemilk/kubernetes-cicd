@@ -68,6 +68,22 @@ profiles:
           flags:
             global:
             - '-n=prod'
+  - name: production-full
+    build:
+      artifacts:
+        - image: gcr.io/kubernetes-cicd-246207/prod/backend
+          context: src/backend
+        - image: gcr.io/kubernetes-cicd-246207/prod/frontend
+          context: src/frontend
+      tagPolicy:
+        envTemplate:
+          template: "{{.IMAGE_NAME}}:latest"
+    deploy:
+      kustomize:
+          path: deploy/overlays/production
+          flags:
+            global:
+            - '-n=prod'
   - name: prod-postgres
     build: {}
     deploy:
