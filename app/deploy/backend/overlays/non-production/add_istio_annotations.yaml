@@ -4,4 +4,4 @@
     sidecar.istio.io/inject: 'true'
 - op: replace
   path: /spec/template/spec/containers/0/imagePullPolicy
-  value: IfNotPresent
+  value: Always 
