@@ -11,26 +11,40 @@ import {
   BlockQuote,
   Quote
 } from 'spectacle'
-import Terminal from 'spectacle-terminal'
 import CodeSlide from 'spectacle-code-slide'
-import { kustomizeFolderLayout, skaffoldConfig } from './messages'
-import CoursePlan from './components/CoursePlan'
-import Architecture from './components/Architecture'
-import Topology from './components/Topology'
-import Kasna from '../../../assets/kasna.jpg'
-import Horse from '../../../assets/horse.jpg'
+import { tektonConfig } from './messages'
 import Demo from '../../../assets/demo.jpg'
 import Kaniko from '../../../assets/kaniko.jpg'
 import Tekton from '../../../assets/tekton.jpg'
 import Spinnaker from '../../../assets/spinnaker.jpg'
 import Skaffold from '../../../assets/skaffold.jpg'
+import Kubernetes from '../../../assets/kubernetes.png'
 import Kustomize from '../../../assets/kustomize.jpg'
-import ConfigManagement from '../../../assets/configManagement.jpg'
-import DevXP from '../../../assets/devXP.jpg'
+import Perimeter from  '../../../assets/perimeter.jpg'
+import Dockerless from '../../../assets/dockerless.jpg'
+import BuildersFeatures from '../../../assets/builders-features.jpg'
+import BuildersDocker from '../../../assets/builders-docker.jpg'
+import BuildersBuildKit from '../../../assets/builders-buildkit.jpg'
+import BuildersImg from '../../../assets/builders-img.jpg'
+import BuildersBuildah from '../../../assets/builders-buildah.jpg'
+import BuildersKaniko from '../../../assets/builders-kaniko.jpg'
+import PipelinesFeatures from '../../../assets/pipelines-features.jpg'
+import PipelinesJenkins from '../../../assets/pipelines-jenkins.jpg'
+import PipelinesJenkinsX from '../../../assets/pipelines-jenkinsx.jpg'
+import PipelinesArgo from '../../../assets/pipelines-argo.jpg'
+import PipelinesTekton from '../../../assets/pipelines-tekton.jpg'
+import PipelinesSpinnaker from '../../../assets/pipelines-spinnaker.jpg'
+import PipelinesWeaveFlux from '../../../assets/pipelines-weaveflux.jpg'
+import DevXPFeatures from '../../../assets/devxp-features.jpg'
+import DevXPSkaffold from '../../../assets/devxp-skaffold.jpg'
+import DevXPDraft from '../../../assets/devxp-draft.jpg'
+import DevXPTilt from '../../../assets/devxp-tilt.jpg'
+import DevXPGarden from '../../../assets/devxp-garden.jpg'
+import LocalDevelopment from '../../../assets/local_development.jpg'
+import RampUp from '../../../assets/ramp-up.jpg'
+import Yaml from '../../../assets/yaml.jpg'
+import Templating from '../../../assets/templating.jpg'
 import Github from '../../../assets/github.jpg'
-import Jib from '../../../assets/jib.jpg'
-import Landscape1 from '../../../assets/landscape-1.jpg'
-import Pipelines from '../../../assets/pipelines.jpg'
 const STYLE = {
   blue: { color: '#2196f3' },
   yellow: { color: 'yellow' },
@@ -40,6 +54,14 @@ const gitClone = `$ git clone git@gitlab.mantelgroup.com.au:future-tech/istio-tr
 $ cd istio-training
 $ make bootstrap
 `
+const COLOR_PALLETE = {
+  blue: '#4285f4',
+  red: '#d8133a',
+  green: '#64c27c',
+  yellow: '#f1cb31',
+  purple: '#9f5ac7',
+
+}
 const style = {
   note: { bottom: -25, position: 'relative' },
   pre: {
@@ -53,7 +75,7 @@ const style = {
 }
 export default [
   <Slide align='center center' transition={['zoom']} bgColor='primary'>
-    <Image src={Kasna} />
+    <Image src={Kubernetes} />
     <Heading
       margin='100px 0 0 0'
       size={1}
@@ -62,238 +84,226 @@ export default [
       lineHeight={1}
       textColor='secondary'
     >
-      Developer Experience & CI/CD
+     Kubernetes-centric CI/CD  
     </Heading>
     <Text margin='30px 0 0' textColor='tertiary' size={5} bold>
       Ben Ebsworth
     </Text>
   </Slide>,
-  <Slide align='center flext-start' transition={['slide']} b>
-    <Heading>Platform Goals</Heading>
-    <Image src={Horse} />
-  </Slide>,
-  <Slide
-    align='center center'
-    transition={['zoom']}
-    bgColor='primary'
-    bgImage={Landscape1}
-    bgDarken={0.2}
-  >
-    <Heading textColor="#34a752" lineHeight={2} textAlign='right'>
-      Current Landscape
-    </Heading>
-  </Slide>,
   <Slide align='center center' transition={['slide']} bgColor='primary'>
-    <Heading textColor='#4285f4'>Build Tools</Heading>
-  </Slide>,
-  <Slide align='center center' transition={['zoom']} bgColor='primary'>
-    <Image src={Kaniko} />
-    <BlockQuote>
-      <Quote textColor={'gray'} textSize={30}>
-        Building docker images without the Docker daemon and in userspace.
-        Enabling unprivileged and fast image builds.
-      </Quote>
-    </BlockQuote>
+  <Heading textColor={COLOR_PALLETE['blue']}>Overview</Heading>
     <List>
       <Appear>
         <ListItem>
-          Integrates with Cloud Build, enabling sophisticated caching for rapid
-          builds
+          Why? - Benefits of running a kubernetes centric workflow 
         </ListItem>
       </Appear>
       <Appear>
         <ListItem>
-          Enables building of Docker images within a Kubernetes Cluster
+          How? - Run down of current ecosystem available to achieve this goal
         </ListItem>
       </Appear>
       <Appear>
-        <ListItem>Integrates with Tekton</ListItem>
+        <ListItem>
+          Demonstration - An end-to-end example of a number of tools working together
+        </ListItem>
       </Appear>
-    </List>
+    </List> 
   </Slide>,
-  <Slide align='center center' transition={['zoom']} bgColor='primary'>
-  <Image height={300} src={Jib} />
-  <BlockQuote>
-    <Quote textColor={'gray'} textSize={30}>
-      Builds optimized docker images and OCI images for Java applications without a Docker daemon. 
-    </Quote>
-  </BlockQuote>
-  <List>
-    <Appear>
-      <ListItem>
-        Separates your Java src into multiple layers, will only rebuild the layers that change between builds. Dramatically improving build times
-      </ListItem>
-    </Appear>
-    <Appear>
-      <ListItem>
-        plugins available in Maven/Gradle
-      </ListItem>
-    </Appear>
-  </List>
+  <Slide align='center center' transition={['slide']} bgColor='primary'>
+    <Heading textColor={COLOR_PALLETE['red']}>Why</Heading>
   </Slide>,
-  <Slide align='center center' transition={['slide']} bgColor='primary' bgImage={Pipelines}
-  bgDarken={0.50}>
-    <Heading textColor={"#fabc08"}>Pipelines</Heading>
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
+    <Heading textColor={COLOR_PALLETE['red']}>Security</Heading>
+    <Appear>
+      <div style={{ float: 'left', marginTop: '200px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+        <Image margin={"0 50px 0 0"}height={120} src={Kubernetes} />
+        <Text margin="0" textColor='black' textSize={68} bold>
+          Kubernetes Controls
+        </Text> 
+      </div>
+    </Appear>
+    <Appear>
+      <div style={{ float: 'left', marginTop: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+        <Image margin={"0 50px 0 0"}height={120} src={Perimeter} />
+        <Text margin="0" textColor='black' textSize={68} bold>
+          Minimize access perimeter
+        </Text> 
+      </div>
+    </Appear>
+    <Appear>
+      <div style={{ float: 'left', marginTop: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+        <Image margin={"0 50px 0 0"}height={120} src={Dockerless} />
+        <Text margin="0" textColor='black' textSize={68} bold>
+          Dockerless Builds
+        </Text> 
+      </div>
+    </Appear>
   </Slide>,
-  <Slide align='center center' transition={['zoom']} bgColor='primary'>
-  <Image height={200} src={Tekton} />
-  <BlockQuote>
-    <Quote textColor={'gray'} textSize={30}>
-      Declarative and highly composable components for declaring CI/CD pipelines
-    </Quote>
-  </BlockQuote>
-  <List>
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
+    <Heading textColor={COLOR_PALLETE['red']}>Idiomatic</Heading>
     <Appear>
-      <ListItem>
-       Aims to provide a common set of fundamental CI/CD primitives, facilitating standardization and higher level frameworks to be implemented around it
-      </ListItem>
+      <div style={{ float: 'left', marginTop: '200px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+        <Image margin={"0 50px 0 0"} height={120} src={Yaml} />
+        <Text margin="0" textColor='black' textSize={68} bold>
+          Everything represented as YAML
+        </Text> 
+      </div>
     </Appear>
     <Appear>
-      <ListItem>
-        Runs inside Kubernetes. These components are represented as Custom Resource Definitions (CRDs)
-      </ListItem>
+      <div style={{ float: 'left', marginTop: '60px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+        <Image margin={"0 50px 0 0"} height={80} src={Templating} />
+        <Text margin="0" textColor='black' textSize={68} bold>
+          Standarising and Templating
+        </Text> 
+      </div>
     </Appear>
-  </List>
   </Slide>,
-  <Slide align='center center' transition={['zoom']} bgColor='primary'>
-  <Image height={300} src={Spinnaker} />
-  <BlockQuote>
-    <Quote textColor={'gray'} textSize={30}>
-    Continuous delivery platform for releasing software changes with high velocity and confidence
-    </Quote>
-  </BlockQuote>
-  <List>
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
+    <Heading textColor={COLOR_PALLETE['red']}>Developer Experience</Heading>
     <Appear>
-      <ListItem>
-      Kubernetes V2 provider enables utilizing of raw manifests and other templating tooling like Helm
-      </ListItem>
+      <div style={{ float: 'left', marginTop: '200px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+        <Image margin={"0 50px 0 0"} height={120} src={LocalDevelopment} />
+        <Text margin="0" textColor='black' textSize={68} bold>
+          Local development environment more closely resembles staging & production environment
+        </Text> 
+      </div>
     </Appear>
     <Appear>
-      <ListItem>
-        Canary analysis capability, providing confidence in releases
-      </ListItem>
+      <div style={{ float: 'left', marginTop: '60px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+        <Image margin={"0 50px 0 0"} height={120} src={RampUp} />
+        <Text margin="0" textColor='black' textSize={68} bold>
+          Helps develops ramp up on Kubernetes, enabling a "you build it, you run it" environment
+        </Text> 
+      </div>
     </Appear>
-    <Appear>
-      <ListItem>
-        Joined Continuous Delivery Foundation (CDF), along with Tekton and Jenkins
-      </ListItem>
-    </Appear>
-  </List>
   </Slide>,
-  <Slide align='center center' transition={['slide']} bgColor='primary' bgImage={ConfigManagement}
-  bgDarken={0.50}>
-    <Heading textColor="#ea4335">Configuration Management & Templating</Heading>
+  <Slide align='center center' transition={['slide']} bgColor='primary'>
+    <Heading textColor={COLOR_PALLETE['green']}>How</Heading>
   </Slide>,
-  <Slide align='center center' transition={['zoom']} bgColor='primary'>
-  <Image height={200} src={Kustomize} />
-  <BlockQuote>
-    <Quote textColor={'gray'} textSize={30}>
-    kustomize lets you customize raw, template-free YAML files for multiple purposes, leaving the original YAML untouched and usable as is
-    </Quote>
-  </BlockQuote>
-  <List>
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
+    <Heading textColor={COLOR_PALLETE['green']}>Builders</Heading>
+    <div style={{ justifyContent: 'center', marginTop: '100px', display: 'flex', flexDirection: 'row'}}>
     <Appear>
-      <ListItem>
-      Provides a simplier way of defining resources and how to join together resources based of environment
-      </ListItem>
+        <Image margin={"0 0 0 0"} height={600} src={BuildersFeatures} />
     </Appear>
     <Appear>
-      <ListItem>
-        Supported by Skaffold, Argo
-      </ListItem>
+        <Image margin={"0 0 0 0"} height={600} src={BuildersDocker} />
     </Appear>
     <Appear>
-      <ListItem>
-        Natively added to kubectl command-line client for Kubernetes
-      </ListItem>
+        <Image margin={"0 0 0 0"} height={600} src={BuildersBuildKit} />
     </Appear>
-  </List>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={BuildersImg} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={BuildersBuildah} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={BuildersKaniko} />
+    </Appear>
+    </div>
   </Slide>,
-  <Slide align='center center' transition={['zoom']} bgColor='primary'>
-  <Image height={200} src={Skaffold} />
-  <BlockQuote>
-    <Quote textColor={'gray'} textSize={30}>
-    Continuous delivery platform for releasing software changes with high velocity and confidence
-    </Quote>
-  </BlockQuote>
-  <List>
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
+    <Heading textColor={COLOR_PALLETE['green']}>Pipelines</Heading>
+    <div style={{ justifyContent: 'center', marginTop: '100px', display: 'flex', flexDirection: 'row'}}>
     <Appear>
-      <ListItem>
-      Utilised by Cloud Code to manage the build, test and deploy phases of development 
-      </ListItem>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesFeatures} />
     </Appear>
     <Appear>
-      <ListItem>
-        Streamlines the management of contexts and/or environments by providing a "profile" approach to map configuration to a specific profile
-      </ListItem>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesJenkins} />
     </Appear>
     <Appear>
-      <ListItem>
-        Integrates with modern build tooling, including Cloud Build, Kaniko & Jib.
-      </ListItem>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesJenkinsX} />
     </Appear>
-  </List>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesArgo} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesTekton} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesSpinnaker} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesWeaveFlux} />
+    </Appear>
+    </div>
   </Slide>,
-  <Slide align='center center' transition={['slide']} bgColor='primary' bgColor='primary' bgDarken={0.50} bgImage={DevXP}>
-    <Heading textColor="#34a752">Developer Experience</Heading>
-  </Slide>,
-  <Slide align='center center' transition={['zoom']} bgColor='primary'>
-  <Heading textColor="#4285f4">Cloud Code</Heading>
-  <BlockQuote>
-    <Quote textColor={'gray'} textSize={30}>
-    Tools to help you write, deploy, and debug cloud-native applications quickly and easily
-    </Quote>
-  </BlockQuote>
-  <List>
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
+    <Heading textColor={COLOR_PALLETE['green']}>Developer Experience</Heading>
+    <div style={{ justifyContent: 'center', marginTop: '100px', display: 'flex', flexDirection: 'row'}}>
     <Appear>
-      <ListItem>
-      Provides support for deploying GKE clusters
-      </ListItem>
+        <Image margin={"0 0 0 0"} height={600} src={DevXPFeatures} />
     </Appear>
     <Appear>
-      <ListItem>
-        Utilises skaffold to manage deployments, builds and hot-updating
-      </ListItem>
+        <Image margin={"0 0 0 0"} height={600} src={DevXPSkaffold} />
     </Appear>
     <Appear>
-      <ListItem>
-        Plugin available in VS Code (Beta) and IntelliJ (Alpha)
-      </ListItem>
+        <Image margin={"0 0 0 0"} height={600} src={DevXPTilt} />
     </Appear>
-  </List>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={DevXPGarden} />
+    </Appear>
+    </div>
   </Slide>,
-  <Slide align='center center' transition={['zoom']} bgColor='primary' bgImage={Demo}
-  bgDarken={0.50}>
-    <Heading textColor={"#bc2cd8"}>Demo</Heading>
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
+    <Heading textColor={COLOR_PALLETE['green']}>Templating & Config Management</Heading>
+    <div style={{ justifyContent: 'center', marginTop: '100px', display: 'flex', flexDirection: 'row'}}>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={TemplatingFeatures} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={TemplatingHelm} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={TemplatingKustomize} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={TemplatingJsonnet} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={TemplatingKapitan} />
+    </Appear>
+    </div>
   </Slide>,
-  <CodeSlide
-    transition={['fade']}
-    padding={0}
-    titleStyle={style.title}
-    noteStyle={style.note}
-    codeStyle={{ fontSize: '0.8em' }}
-    style={{ height: 640, padding: '24% 0px 0% 0px', ...style.pre }}
-    lang='yaml'
-    bgColor='codeBackground'
-    color={style.codeColor}
-    code={require('raw-loader!./code-examples/kustomize-folder-layout.txt')}
-    ranges={kustomizeFolderLayout}
-  />,
+  <Slide align='center center' transition={['slide']} bgColor='primary'>
+    <Heading textColor={COLOR_PALLETE['purple']}>Demo</Heading>
+  </Slide>,
+  <Slide align='center center' transition={['slide']} bgColor='primary'>
+    <Heading textColor={COLOR_PALLETE['purple']}>Architecture</Heading>
+  </Slide>,
+  <Slide align='center center' transition={['slide']} bgColor='primary'>
+  <Heading textColor={COLOR_PALLETE['purple']}>CI/CD Pipeline</Heading>
+</Slide>,
   <CodeSlide
   transition={['fade']}
   padding={0}
-  titleStyle={style.title}
+  // titleStyle={style.title}
   noteStyle={style.note}
   codeStyle={{ fontSize: '0.8em' }}
-  style={{ height: 640, padding: '48% 0px 0% 0px', ...style.pre }}
+  style={{ padding: '2% 0px' }}
   lang='yaml'
   bgColor='codeBackground'
   color={style.codeColor}
-  code={require('raw-loader!./code-examples/skaffoldConfig.txt')}
-  ranges={skaffoldConfig}
+  code={require('raw-loader!./code-examples/build.txt')}
+  ranges={tektonConfig}
   />,
+  <Slide align='center center' transition={['zoom']} bgColor='primary'>
+    <Image style={{animation: 'rotation 10s linear infinite'}} src={Kubernetes} />
+    <Heading
+      margin='100px 0 0 0'
+      size={1}
+      fit
+      caps  
+      lineHeight={1}
+      textColor='secondary'
+    >
+     Demo Time!  
+    </Heading>
+  </Slide>,
   <Slide align='center center' transition={['slide']}>
     <Image height={200} src={Github} />
-    <Heading margin="50px 0 0 0" textColor="secondary" size={4}>https://github.com/castlemilk/next-dev-xp</Heading>
+    <Heading margin="50px 0 0 0" textColor="secondary" size={5}>https://github.com/castlemilk/kubernetes-cicd</Heading>
   </Slide>,
 ]

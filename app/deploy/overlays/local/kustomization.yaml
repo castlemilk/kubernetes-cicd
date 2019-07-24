@@ -2,16 +2,22 @@ bases:
 - ../../backend/base
 - ../../frontend/base
 - ../../postgres/overlays/local
-resources:
-- namespace.yaml
+# resources:
+# - namespace.yaml
 namespace: development
-patchesJson6902:
-- target:
-    group: ''
-    version: v1
+vars:
+- name: POSTGRES_SERVICE
+  objref:
     kind: Service
-    name: postgres 
-  path: service_patch.yaml
+    name: postgres
+    apiVersion: v1
+patchesJson6902:
+# - target:
+#     group: ''
+#     version: v1
+#     kind: Service
+#     name: postgres 
+#   path: service_patch.yaml
 - target:
     group: ''
     version: v1
