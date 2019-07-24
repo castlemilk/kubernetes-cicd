@@ -2,8 +2,8 @@ bases:
 - ../../backend/overlays/non-production
 - ../../frontend/overlays/non-production
 - ../../postgres/overlays/non-production
-resources:
-- namespace.yaml
+# resources:
+# - namespace.yaml
 namespace: np 
 commonAnnotations:
   context: demo-app

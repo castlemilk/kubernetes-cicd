@@ -64,6 +64,7 @@ local.dev:
 	@eval $(minikube docker-env)
 	@sudo minikube tunnel &> ~/minikube-tunnel.log &
 	@sleep 5
+	@kubectl create namespace development --dry-run -o yaml | kubectl apply -f -
 	cd app; ENV=local skaffold run -p local
 	@kubectl wait -n development deployment products-backend --for condition=available
 	@BACKEND_ADDRESS=`kubectl get svc products-backend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
@@ -88,7 +89,10 @@ local.dev:
 	
 
 staging.dev:
-	cd app; ENV=staging skaffold dev -p staging
+	@eval $(minikube docker-env)
+	@kubectx gke_kubernetes-cicd-246207_australia-southeast1-a_kubernetes-cicd
+	@kubectl create namespace np --dry-run -o yaml | kubectl apply -f -
+	cd app; ENV=staging skaffold dev -p staging --no-prune=true
 	open http://products.np.cicd.benebsworth.com
 ## create localubernetes cluster
 local.cluster.create:
