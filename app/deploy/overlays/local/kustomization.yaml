@@ -4,7 +4,7 @@ bases:
 - ../../postgres/overlays/local
 # resources:
 # - namespace.yaml
-namespace: development
+namespace: dev
 vars:
 - name: POSTGRES_SERVICE
   objref:

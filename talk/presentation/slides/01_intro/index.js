@@ -37,6 +37,7 @@ import PipelinesSpinnaker from '../../../assets/pipelines-spinnaker.jpg'
 import PipelinesWeaveFlux from '../../../assets/pipelines-weaveflux.jpg'
 import DevXPFeatures from '../../../assets/devxp-features.jpg'
 import DevXPSkaffold from '../../../assets/devxp-skaffold.jpg'
+import PipelineArchitecture from '../../../assets/pipeline-architecture.jpg'
 import DevXPTilt from '../../../assets/devxp-tilt.jpg'
 import DevXPGarden from '../../../assets/devxp-garden.jpg'
 import LocalDevelopment from '../../../assets/local_development.jpg'
@@ -270,11 +271,9 @@ export default [
   <Slide align='center center' transition={['slide']} bgColor='primary'>
     <Heading textColor={COLOR_PALLETE['purple']}>Demo</Heading>
   </Slide>,
-  <Slide align='center center' transition={['slide']} bgColor='primary'>
-    <Heading textColor={COLOR_PALLETE['purple']}>Architecture</Heading>
-  </Slide>,
-  <Slide align='center center' transition={['slide']} bgColor='primary'>
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
   <Heading textColor={COLOR_PALLETE['purple']}>CI/CD Pipeline</Heading>
+  <Image margin={"100px auto"} height={800} src={PipelineArchitecture} />
 </Slide>,
   <CodeSlide
   transition={['fade']}
