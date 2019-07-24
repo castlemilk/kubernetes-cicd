@@ -92,7 +92,7 @@ staging.dev:
 	@eval $(minikube docker-env)
 	@kubectx gke_kubernetes-cicd-246207_australia-southeast1-a_kubernetes-cicd
 	@kubectl create namespace np --dry-run -o yaml | kubectl apply -f -
-	cd app; ENV=staging skaffold dev -p staging --no-prune=true
+	cd app; ENV=staging skaffold dev -p staging --cleanup=true --no-prune=true
 	open http://products.np.cicd.benebsworth.com
 ## create localubernetes cluster
 local.cluster.create:

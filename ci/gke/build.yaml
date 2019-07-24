@@ -321,7 +321,7 @@ spec:
         type: image
   steps:
   - name: build-and-push
-    image: gcr.io/kaniko-project/executor:v0.10.0
+    image: gcr.io/kaniko-project/executor:latest
     env:
     - name: "DOCKER_CONFIG"
       value: "/builder/home/.docker/"
@@ -329,8 +329,8 @@ spec:
       - /kaniko/executor
     args:
       - --dockerfile=${inputs.params.pathToDockerFile}
-      - --destination=${inputs.params.destinationRegistry}/${inputs.params.appName}:${inputs.params.imageTag}
       - --destination=${inputs.params.destinationRegistry}/${inputs.params.appName}:latest
+      - --destination=${inputs.params.destinationRegistry}/${inputs.params.appName}:${inputs.params.imageTag}
       - --context=${inputs.params.pathToContext}
       - --cache=true
       - --cache-repo=${inputs.params.destinationRegistry}/${inputs.params.appName}
