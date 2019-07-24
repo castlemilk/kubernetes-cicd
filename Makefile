@@ -61,10 +61,10 @@ open.local:
 
 ## start local development
 local.dev:
-	eval $(minikube docker-env)
-	skaffold build -p local
-	skaffold deploy -p local
-	# sudo minikube tunnel
+	@eval $(minikube docker-env)
+	@sudo minikube tunnel &> ~/minikube-tunnel.log &
+	@sleep 5
+	cd app; ENV=local skaffold run -p local
 	@kubectl wait -n development deployment products-backend --for condition=available
 	@BACKEND_ADDRESS=`kubectl get svc products-backend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
 	if grep -i "api.demo.local" /etc/hosts; then \
@@ -78,7 +78,14 @@ local.dev:
 	else \
 		echo "$$FRONTEND_ADDRESS products.demo.local" | sudo tee -a /etc/hosts; \
 	fi
+	@while [ $$(curl -sL -o /dev/null -w ''%{http_code}'' http://api.demo.local/api/v1/products/) != "200" ]; do printf "."; sleep 1; done
+	@while [ $$(curl -sL -o /dev/null -w ''%{http_code}'' http://products.demo.local) != "200" ]; do printf "."; sleep 1; done
 	open http://products.demo.local
+	cd app; ENV=local skaffold dev -p local
+	@pkill -f 'minikube tunnel'
+	@minikube tunnel -c
+	
+	
 
 staging.dev:
 	cd app; ENV=staging skaffold dev -p staging
