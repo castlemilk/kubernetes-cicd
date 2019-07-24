@@ -22,6 +22,24 @@ import Kubernetes from '../../../assets/kubernetes.png'
 import Kustomize from '../../../assets/kustomize.jpg'
 import Perimeter from  '../../../assets/perimeter.jpg'
 import Dockerless from '../../../assets/dockerless.jpg'
+import BuildersFeatures from '../../../assets/builders-features.jpg'
+import BuildersDocker from '../../../assets/builders-docker.jpg'
+import BuildersBuildKit from '../../../assets/builders-buildkit.jpg'
+import BuildersImg from '../../../assets/builders-img.jpg'
+import BuildersBuildah from '../../../assets/builders-buildah.jpg'
+import BuildersKaniko from '../../../assets/builders-kaniko.jpg'
+import PipelinesFeatures from '../../../assets/pipelines-features.jpg'
+import PipelinesJenkins from '../../../assets/pipelines-jenkins.jpg'
+import PipelinesJenkinsX from '../../../assets/pipelines-jenkinsx.jpg'
+import PipelinesArgo from '../../../assets/pipelines-argo.jpg'
+import PipelinesTekton from '../../../assets/pipelines-tekton.jpg'
+import PipelinesSpinnaker from '../../../assets/pipelines-spinnaker.jpg'
+import PipelinesWeaveFlux from '../../../assets/pipelines-weaveflux.jpg'
+import DevXPFeatures from '../../../assets/devxp-features.jpg'
+import DevXPSkaffold from '../../../assets/devxp-skaffold.jpg'
+import DevXPDraft from '../../../assets/devxp-draft.jpg'
+import DevXPTilt from '../../../assets/devxp-tilt.jpg'
+import DevXPGarden from '../../../assets/devxp-garden.jpg'
 import LocalDevelopment from '../../../assets/local_development.jpg'
 import RampUp from '../../../assets/ramp-up.jpg'
 import Yaml from '../../../assets/yaml.jpg'
@@ -163,17 +181,91 @@ export default [
   <Slide align='center center' transition={['slide']} bgColor='primary'>
     <Heading textColor={COLOR_PALLETE['green']}>How</Heading>
   </Slide>,
-  <Slide align='center center' transition={['slide']} bgColor='primary'>
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
     <Heading textColor={COLOR_PALLETE['green']}>Builders</Heading>
+    <div style={{ justifyContent: 'center', marginTop: '100px', display: 'flex', flexDirection: 'row'}}>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={BuildersFeatures} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={BuildersDocker} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={BuildersBuildKit} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={BuildersImg} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={BuildersBuildah} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={BuildersKaniko} />
+    </Appear>
+    </div>
   </Slide>,
-  <Slide align='center center' transition={['slide']} bgColor='primary'>
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
     <Heading textColor={COLOR_PALLETE['green']}>Pipelines</Heading>
+    <div style={{ justifyContent: 'center', marginTop: '100px', display: 'flex', flexDirection: 'row'}}>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesFeatures} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesJenkins} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesJenkinsX} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesArgo} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesTekton} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesSpinnaker} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={PipelinesWeaveFlux} />
+    </Appear>
+    </div>
   </Slide>,
-  <Slide align='center center' transition={['slide']} bgColor='primary'>
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
     <Heading textColor={COLOR_PALLETE['green']}>Developer Experience</Heading>
+    <div style={{ justifyContent: 'center', marginTop: '100px', display: 'flex', flexDirection: 'row'}}>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={DevXPFeatures} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={DevXPSkaffold} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={DevXPTilt} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={DevXPGarden} />
+    </Appear>
+    </div>
   </Slide>,
-  <Slide align='center center' transition={['slide']} bgColor='primary'>
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
     <Heading textColor={COLOR_PALLETE['green']}>Templating & Config Management</Heading>
+    <div style={{ justifyContent: 'center', marginTop: '100px', display: 'flex', flexDirection: 'row'}}>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={TemplatingFeatures} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={TemplatingHelm} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={TemplatingKustomize} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={TemplatingJsonnet} />
+    </Appear>
+    <Appear>
+        <Image margin={"0 0 0 0"} height={600} src={TemplatingKapitan} />
+    </Appear>
+    </div>
   </Slide>,
   <Slide align='center center' transition={['slide']} bgColor='primary'>
     <Heading textColor={COLOR_PALLETE['purple']}>Demo</Heading>
@@ -203,7 +295,7 @@ export default [
       margin='100px 0 0 0'
       size={1}
       fit
-      caps
+      caps  
       lineHeight={1}
       textColor='secondary'
     >
