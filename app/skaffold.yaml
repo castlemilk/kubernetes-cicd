@@ -23,7 +23,7 @@ profiles:
           path: deploy/overlays/local
           flags:
             global:
-            - '-n=development'
+            - '-n=dev'
     activation:
     - env: ENV=local
       kubeContext: minikube
@@ -34,7 +34,7 @@ profiles:
           path: deploy/overlays/local-postgres
           flags:
             global:
-            - '-n=development'
+            - '-n=dev'
   - name: staging
     activation:
     - env: ENV=staging

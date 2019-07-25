@@ -62,29 +62,27 @@ open.local:
 ## start local development
 local.dev:
 	@eval $(minikube docker-env)
-	@sudo minikube tunnel &> ~/minikube-tunnel.log &
-	@sleep 5
-	@kubectl create namespace development --dry-run -o yaml | kubectl apply -f -
+	kubectx minikube
+	@kubectl create namespace dev --dry-run -o yaml | kubectl apply -f -
 	cd app; ENV=local skaffold run -p local
-	@kubectl wait -n development deployment products-backend --for condition=available
-	@BACKEND_ADDRESS=`kubectl get svc products-backend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
+	@kubectl wait -n dev deployment products-backend --for condition=available
+	@BACKEND_ADDRESS=`kubectl get svc products-backend --namespace dev --output 'jsonpath={.spec.clusterIP}'`; \
 	if grep -i "api.demo.local" /etc/hosts; then \
 		sudo sed -i -e "s/.*api.demo.local/$$BACKEND_ADDRESS api.demo.local/" /etc/hosts; \
 	else \
 		echo "$$BACKEND_ADDRESS api.demo.local" | sudo tee -a /etc/hosts; \
 	fi
-	@FRONTEND_ADDRESS=`kubectl get svc products-frontend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
+	@FRONTEND_ADDRESS=`kubectl get svc products-frontend --namespace dev --output 'jsonpath={.spec.clusterIP}'`; \
 	if grep -i "products.demo.local" /etc/hosts; then \
 		sudo sed -i -e "s/.*products.demo.local/$$FRONTEND_ADDRESS products.demo.local/" /etc/hosts; \
 	else \
 		echo "$$FRONTEND_ADDRESS products.demo.local" | sudo tee -a /etc/hosts; \
 	fi
-	@while [ $$(curl -sL -o /dev/null -w ''%{http_code}'' http://api.demo.local/api/v1/products/) != "200" ]; do printf "."; sleep 1; done
-	@while [ $$(curl -sL -o /dev/null -w ''%{http_code}'' http://products.demo.local) != "200" ]; do printf "."; sleep 1; done
+	@sleep 3
+	
 	open http://products.demo.local
 	cd app; ENV=local skaffold dev -p local
 	@pkill -f 'minikube tunnel'
-	@minikube tunnel -c
 	
 	
 
@@ -92,8 +90,12 @@ staging.dev:
 	@eval $(minikube docker-env)
 	@kubectx gke_kubernetes-cicd-246207_australia-southeast1-a_kubernetes-cicd
 	@kubectl create namespace np --dry-run -o yaml | kubectl apply -f -
-	cd app; ENV=staging skaffold dev -p staging --no-prune=true
+	cd app; ENV=staging skaffold dev -p staging --cleanup=false --no-prune=true
 	open http://products.np.cicd.benebsworth.com
+
+prod.restart:
+	@kubectx gke_kubernetes-cicd-246207_australia-southeast1-a_kubernetes-cicd
+	cd app; skaffold run -p production-full
 ## create localubernetes cluster
 local.cluster.create:
 	minikube start --memory=13000 --cpus=7 \
