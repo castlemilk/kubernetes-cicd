@@ -273,7 +273,7 @@ export default [
   </Slide>,
   <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
   <Heading textColor={COLOR_PALLETE['purple']}>CI/CD Pipeline</Heading>
-  <Image margin={"100px auto"} height={800} src={PipelineArchitecture} />
+  <Image margin={"100px auto"} height={600} src={PipelineArchitecture} />
 </Slide>,
   <CodeSlide
   transition={['fade']}
