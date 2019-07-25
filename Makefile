@@ -82,9 +82,6 @@ local.dev:
 	
 	open http://products.demo.local
 	cd app; ENV=local skaffold dev -p local
-	@pkill -f 'minikube tunnel'
-	
-	
 
 staging.dev:
 	@eval $(minikube docker-env)
