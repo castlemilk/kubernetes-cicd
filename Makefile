@@ -44,6 +44,16 @@ endif
 init:
 
 
+## test backend app
+unittest.backend:
+	cd app/src/backend; go clean -testcache
+	cd app/src/backend; go test ./... -mod=vendor -run=Unit -v
+
+## integration test backend app
+integrationtest.backend:
+	cd app/src/backend; go clean -testcache	
+	cd app/src/backend; go test ./... -mod=vendor -run=Integration -v
+
 open.local:
 	@BACKEND_ADDRESS=`kubectl get svc products-backend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
 	if grep -i "api.demo.local" /etc/hosts; then \
