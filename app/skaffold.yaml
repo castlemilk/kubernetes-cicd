@@ -50,14 +50,7 @@ profiles:
           template: "{{.IMAGE_NAME}}:latest"
     deploy:
       kustomize:
-          path: deploy/overlays/non-production
-          flags:
-            global:
-            - '-n=np'
-  - name: non-production
-    deploy:
-      kustomize:
-          path: deploy/overlays/non-production
+          path: deploy/overlays/staging
           flags:
             global:
             - '-n=np'
