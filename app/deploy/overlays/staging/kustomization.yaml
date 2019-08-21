@@ -1,13 +1,13 @@
 bases:
-- ../../backend/overlays/non-production
-- ../../frontend/overlays/non-production
-- ../../postgres/overlays/non-production
+- ../../backend/overlays/staging
+- ../../frontend/overlays/staging
+- ../../postgres/overlays/staging
 # resources:
 # - namespace.yaml
 namespace: np 
 commonAnnotations:
   context: demo-app
-  environment: non-production
+  environment: staging
 vars:
 - name: POSTGRES_SERVICE
   objref:

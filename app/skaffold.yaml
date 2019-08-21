@@ -9,7 +9,6 @@ build:
   tagPolicy:
     envTemplate:
       template: "{{.IMAGE_NAME}}:latest"
-  local: {}
 test:
   - image: products-backend:latest
     structureTests:
@@ -26,7 +25,7 @@ profiles:
             - '-n=dev'
     activation:
     - env: ENV=local
-      kubeContext: minikube
+    - kubeContext: minikube
       command: dev
   - name: local-postgres
     deploy:
@@ -38,7 +37,8 @@ profiles:
   - name: staging
     activation:
     - env: ENV=staging
-      kubeContext: gke_kubernetes-cicd-246207_australia-southeast1-a_kubernetes-cicd
+    - kubeContext: gke_kubernetes-cicd-246207_australia-southeast1-a_kubernetes-cicd
+      command: dev
     build:
       artifacts:
         - image: gcr.io/kubernetes-cicd-246207/dev/backend
@@ -50,14 +50,7 @@ profiles:
           template: "{{.IMAGE_NAME}}:latest"
     deploy:
       kustomize:
-          path: deploy/overlays/non-production
-          flags:
-            global:
-            - '-n=np'
-  - name: non-production
-    deploy:
-      kustomize:
-          path: deploy/overlays/non-production
+          path: deploy/overlays/staging
           flags:
             global:
             - '-n=np'

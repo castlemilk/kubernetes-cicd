@@ -44,6 +44,16 @@ endif
 init:
 
 
+## test backend app
+unittest.backend:
+	cd app/src/backend; go clean -testcache
+	cd app/src/backend; go test ./... -mod=vendor -run=Unit -v
+
+## integration test backend app
+integrationtest.backend:
+	cd app/src/backend; go clean -testcache	
+	cd app/src/backend; go test ./... -mod=vendor -run=Integration -v
+
 open.local:
 	@BACKEND_ADDRESS=`kubectl get svc products-backend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
 	if grep -i "api.demo.local" /etc/hosts; then \
@@ -78,8 +88,8 @@ local.dev:
 	else \
 		echo "$$FRONTEND_ADDRESS products.demo.local" | sudo tee -a /etc/hosts; \
 	fi
-	@sleep 3
-	
+	while [ "$$(curl -sSL -o /dev/null -w ''%{http_code}'' http://products.demo.local)" != "200" ]; do printf "."; sleep 1; done
+	while [ "$$(curl -sSL -o /dev/null -w ''%{http_code}'' http://api.demo.local/api/v1/products)" != "200" ]; do printf "."; sleep 1; done
 	open http://products.demo.local
 	cd app; ENV=local skaffold dev -p local
 
