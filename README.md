@@ -50,7 +50,9 @@ Istio is a control-plane orcestration framework for Envoy, this forms what is co
 <img width=86 height=86 align="left" src="docs/assets/gke.png"> 
 
 GKE (Google Kubernetes Engine) provides our Kubernetes cluster for remote development and testing, as well as production deployments. One of the cool things demonstrated in this repository in a nice feature of effectively "pausing" and "resuming" your cluster, where during the paused state, you don't pay for the compute nodes!
+## Environments
 
+![environments](./docs/assets/environments.png)
 ## Pipelines
 
 ![pipelines](./docs/assets/pipelines-tekton.png)
