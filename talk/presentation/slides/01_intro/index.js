@@ -86,9 +86,9 @@ export default [
     >
      Kubernetes-centric CI/CD  
     </Heading>
-    <Text margin='30px 0 0' textColor='tertiary' size={5} bold>
+    {/* <Text margin='30px 0 0' textColor='tertiary' size={5} bold>
       Ben Ebsworth
-    </Text>
+    </Text> */}
   </Slide>,
   <Slide align='center center' transition={['slide']} bgColor='primary'>
   <Heading textColor={COLOR_PALLETE['blue']}>Overview</Heading>
