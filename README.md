@@ -1,9 +1,12 @@
 # Kubernetes-Centric CI/CD
 
-This repository captures the talk and demonstration carried presented at x,y,z. The aim is to cover the current Kubernetes ecosystem, which enables an entirely Kubernetes based CI and CD solution to be implemented. We also discuss the benefits of this and why you should care.
+This repository captures the talk and demonstration carried presented at x,y,z. The aim is to cover the current Kubernetes ecosystem, which enables an entirely Kubernetes based CI and CD solution to be implemented. We also discuss the benefits of this and why you should care.o
+
+## Architecture
+
+![architecture](docs/assets/architecture.png)
 
 ## Technologies
-
 In this talk and demonstration we utilise the following technologies
 
 ### Tekton
@@ -47,6 +50,10 @@ Istio is a control-plane orcestration framework for Envoy, this forms what is co
 <img width=86 height=86 align="left" src="docs/assets/gke.png"> 
 
 GKE (Google Kubernetes Engine) provides our Kubernetes cluster for remote development and testing, as well as production deployments. One of the cool things demonstrated in this repository in a nice feature of effectively "pausing" and "resuming" your cluster, where during the paused state, you don't pay for the compute nodes!
+
+## Pipelines
+
+![pipelines](./docs/assets/pipelines-tekton.png)
 
 ## Future Work
 
