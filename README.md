@@ -23,7 +23,7 @@ In this repository we will capture a number of end-to-end "stacks" or grouping o
 
 ### Choice 1 (GStack) - Technologies
 
-A combination of tooling which enables and end-to-end continuos delivery pipeline. Termed "GStack", because this selection has mostly originated from the `GoogleCloudPlatform` or other teams within Google developing tooling in open source.
+A combination of tooling which enables and end-to-end continuos delivery pipeline. Termed "GStack", because this selection has mostly originated from the [GoogleCloudPlatform](https://github.com/GoogleCloudPlatform) or other teams within Google developing tooling in open source.
 
 #### Tekton
 
