@@ -5,3 +5,4 @@ istio-1.*
 app/src/backend/backend
 github-secret.yaml
 *.credentials
+.DS_Store
