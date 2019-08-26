@@ -1,4 +1,4 @@
-.PHONY: bootstrap build cluster-create cluster-delete
+.PHONY: talk.start test.example
 #❌⚠️✅
 # COLORS
 GREEN  := $(shell tput -Txterm setaf 2)
@@ -7,368 +7,82 @@ WHITE  := $(shell tput -Txterm setaf 7)
 RED		 := $(shell tput -Txterm setaf 1)
 CYAN	 := $(shell tput -Txterm setaf 6)
 RESET  := $(shell tput -Txterm sgr0)
-PROJECT_ID=kubernetes-cicd-246207
-ISTIO_VERSION=1.1.9
-KNATIVE_VERSION=0.6.1
-BASE_ZONE=cicd.benebsworth.com
-NP_ZONE=np.cicd.benebsworth.com
-PROD_ZONE=prod.cicd.benebsworth.com
-DEFAULT_ZONE=default.cicd.benebsworth.com
-TEKTON_ZONE=tekton-pipelines.cicd.benebsworth.com
-TEKTON_PIPELINE_VERSION=v0.5.2
--include .credentials
 
-define wait_for_deployment
-	@printf "🌀 waiting for deployment $(2) to complete"; 
-	@until kubectl get deployment -n $(1)  "$(2)" -o jsonpath='{.status.conditions[?(@.type=="Available")].status}' | grep -q True ; do printf "."; sleep 2 ; done;
-	@printf "  ✅\n";
-endef
-define wait_for_ns_termination
-	@printf "🌀 removing $(1) namespace";
-	@while [ "$$(kubectl get namespace $(1) > /dev/null 2>&1; echo $$?)" = "0" ]; do printf "."; sleep 2; done;
-	@printf " ✅\n";
-endef
-define wait_for_crds
-	@printf "🌀 waiting for istio CRDs to synchronise"; 	
-	@while [ $$(kubectl get customresourcedefinitions | grep istio.io | wc -l) -lt 50 ]; do printf "."; sleep 2; done;
-	@printf " ✅\n";
-endef
-fetch.infra:
-ifeq (,$(wildcard ./deploy/charts/istio-${ISTIO_VERSION}))
-	@read -p "⚠️   Istio folder not found for v${ISTIO_VERSION}, Install Istio now?, Continue (Y/N): " confirm && echo $$confirm | grep -iq "^[yY]" || exit 1
-	mkdir -p deploy/charts
-	cd deploy/charts; curl -L https://git.io/getLatestIstio | ISTIO_VERSION=${ISTIO_VERSION} sh -
-endif
+-include common.mk 
 
-## initialise project environment
-init:
+# run resolved task
+run:
+	$(MAKET)
 
+###Kubernetes
+## install minikube based kubernetes cluster
+componenets.kubernetes.minikube.install: run
 
-## test backend app
-unittest.backend:
-	cd app/src/backend; go clean -testcache
-	cd app/src/backend; go test ./... -mod=vendor -run=Unit -v
+## destroy minikube based kubernetes cluster
+componenets.kubernetes.minikube.uninstall: run
 
-## integration test backend app
-integrationtest.backend:
-	cd app/src/backend; go clean -testcache	
-	cd app/src/backend; go test ./... -mod=vendor -run=Integration -v
+## install gke based kubernetes cluster
+componenets.kubernetes.gke.install: run
 
-open.local:
-	@BACKEND_ADDRESS=`kubectl get svc products-backend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
-	if grep -i "api.demo.local" /etc/hosts; then \
-		sudo sed -i -e "s/.*api.demo.local/$$BACKEND_ADDRESS api.demo.local/" /etc/hosts; \
-	else \
-		echo "$$BACKEND_ADDRESS api.demo.local" | sudo tee -a /etc/hosts; \
-	fi
-	@FRONTEND_ADDRESS=`kubectl get svc products-frontend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
-	if grep -i "products.demo.local" /etc/hosts; then \
-		sudo sed -i -e "s/.*products.demo.local/$$FRONTEND_ADDRESS products.demo.local/" /etc/hosts; \
-	else \
-		echo "$$FRONTEND_ADDRESS products.demo.local" | sudo tee -a /etc/hosts; \
-	fi
-	open http://products.demo.local
+## destroy gke based kubernetes cluster (careful)
+componenets.kubernetes.gke.uninstall: run
 
-## start local development
-local.dev:
-	@eval $(minikube docker-env)
-	kubectx minikube
-	@kubectl create namespace dev --dry-run -o yaml | kubectl apply -f -
-	cd app; ENV=local skaffold run -p local
-	@kubectl wait -n dev deployment products-backend --for condition=available
-	@BACKEND_ADDRESS=`kubectl get svc products-backend --namespace dev --output 'jsonpath={.spec.clusterIP}'`; \
-	if grep -i "api.demo.local" /etc/hosts; then \
-		sudo sed -i -e "s/.*api.demo.local/$$BACKEND_ADDRESS api.demo.local/" /etc/hosts; \
-	else \
-		echo "$$BACKEND_ADDRESS api.demo.local" | sudo tee -a /etc/hosts; \
-	fi
-	@FRONTEND_ADDRESS=`kubectl get svc products-frontend --namespace dev --output 'jsonpath={.spec.clusterIP}'`; \
-	if grep -i "products.demo.local" /etc/hosts; then \
-		sudo sed -i -e "s/.*products.demo.local/$$FRONTEND_ADDRESS products.demo.local/" /etc/hosts; \
-	else \
-		echo "$$FRONTEND_ADDRESS products.demo.local" | sudo tee -a /etc/hosts; \
-	fi
-	while [ "$$(curl -sSL -o /dev/null -w ''%{http_code}'' http://products.demo.local)" != "200" ]; do printf "."; sleep 1; done
-	while [ "$$(curl -sSL -o /dev/null -w ''%{http_code}'' http://api.demo.local/api/v1/products)" != "200" ]; do printf "."; sleep 1; done
-	open http://products.demo.local
-	cd app; ENV=local skaffold dev -p local
+## pause cluster (scale workers down)
+componenets.kubernetes.gke.pause: run
 
-staging.dev:
-	@eval $(minikube docker-env)
-	@kubectx gke_kubernetes-cicd-246207_australia-southeast1-a_kubernetes-cicd
-	@kubectl create namespace np --dry-run -o yaml | kubectl apply -f -
-	cd app; ENV=staging skaffold dev -p staging --cleanup=false --no-prune=true
-	open http://products.np.cicd.benebsworth.com
+## resume cluster (scale workers up)
+componenets.kubernetes.gke.resume: run
 
-prod.restart:
-	@kubectx gke_kubernetes-cicd-246207_australia-southeast1-a_kubernetes-cicd
-	cd app; skaffold run -p production-full
-## create localubernetes cluster
-local.cluster.create:
-	minikube start --memory=13000 --cpus=7 \
-  --kubernetes-version=v1.15.0 \
-  --vm-driver=hyperkit \
-  --disk-size=30g \
-  --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"
-	minikube addons enable registry
-local.dev.cluster.create:
-	minikube start --memory=4000 --cpus=3 \
-  --kubernetes-version=v1.15.0 \
-  --vm-driver=hyperkit \
-  --disk-size=30g \
-  --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"
+## install eks based kubernetes cluster
+components.kubernetes.eks.install: run
 
-gke.cluster.create:
-	time gcloud beta container clusters create kubernetes-cicd \
-		--zone="australia-southeast1-a" \
-		--machine-type="n1-standard-4" \
-		--num-nodes="3" \
-		--no-user-output-enabled \
-		--scopes="https://www.googleapis.com/auth/cloud-platform" \
-		--cluster-version 1.13.7-gke.8
-	gcloud container clusters get-credentials kubernetes-cicd
-gke.cluster.get-credentials:
-	gcloud container clusters get-credentials kubernetes-cicd
-## scale down cluster to 0, effectively pause mode
-gke.cluster.pause:
-	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 0
-gke.cluster.resume:
-	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 3
-	gcloud container clusters get-credentials kubernetes-cicd
-	sleep 30
-	kubectl scale deployment -n knative-serving webhook --replicas 2
-	kubectl scale deployment -n knative-serving webhook --replicas 1
-gke.cluster.delete:
-	gcloud beta container clusters delete kubernetes-cicd --zone="australia-southeast1-a"
-## configure DNS settings for IP assigned to ingress-gateway
-gke.dns.update:
-	@gcloud dns managed-zones create kubernetes-cicd --no-user-output-enabled --dns-name ${BASE_ZONE} --description="base zone" > /dev/null 2>&1 || echo " ✅   base zone ${BASE_ZONE} already exists"
-	@gcloud dns managed-zones create default-namespace --no-user-output-enabled --dns-name ${DEFAULT_ZONE} --description="default namespace zone" > /dev/null 2>&1 || echo " ✅   default zone ${DEFAULT_ZONE} already exists"
-	@gcloud dns managed-zones create tekton-namespace --no-user-output-enabled --dns-name ${TEKTON_ZONE} --description="tekton namespace zone" > /dev/null 2>&1 || echo " ✅  tekton zone ${TEKTON_ZONE} already exists"
-	@gcloud dns managed-zones create non-prod-namespace --no-user-output-enabled --dns-name ${NP_ZONE} --description="tekton non-prod zone" > /dev/null 2>&1 || echo " ✅  tekton zone ${NP_ZONE} already exists"
-	@gcloud dns managed-zones create prod-namespace --no-user-output-enabled --dns-name ${PROD_ZONE} --description="tekton production zone" > /dev/null 2>&1 || echo " ✅  tekton zone ${PROD_ZONE} already exists"
-	rm -rf transaction.yaml
-	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
-	gcloud dns record-sets transaction start --zone="default-namespace"; \
-	gcloud dns record-sets transaction add $$GATEWAY_IP --name "*.${DEFAULT_ZONE}." --ttl=5 --type=A --zone="default-namespace"; \
-	gcloud dns record-sets transaction execute --zone="default-namespace" > /dev/null 2>&1 || echo " ✅   recordsets for ${DEFAULT_ZONE} already exists" 
-	rm -rf transaction.yaml
-	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
-	gcloud dns record-sets transaction start --zone="tekton-namespace"; \
-	gcloud dns record-sets transaction add $$GATEWAY_IP --name "*.${TEKTON_ZONE}." --ttl=5 --type=A --zone="tekton-namespace"; \
-	gcloud dns record-sets transaction execute --zone="tekton-namespace" > /dev/null 2>&1 || echo " ✅   recordsets for ${TEKTON_ZONE} already exists" 
-	rm -rf transaction.yaml
-	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
-	gcloud dns record-sets transaction start --zone="non-prod-namespace"; \
-	gcloud dns record-sets transaction add $$GATEWAY_IP --name "*.${NP_ZONE}." --ttl=5 --type=A --zone="non-prod-namespace"; \
-	gcloud dns record-sets transaction execute --zone="non-prod-namespace" > /dev/null 2>&1 || echo " ✅   recordsets for ${NP_ZONE} already exists"
-	rm -rf transaction.yaml
-	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
-	gcloud dns record-sets transaction start --zone="prod-namespace"; \
-	gcloud dns record-sets transaction add $$GATEWAY_IP --name "*.${PROD_ZONE}." --ttl=5 --type=A --zone="prod-namespace"; \
-	gcloud dns record-sets transaction execute --zone="prod-namespace" > /dev/null 2>&1 || echo " ✅   recordsets for ${PROD_ZONE} already exists" 
+## destroy eks based kubernetes cluster
+components.kubernetes.eks.uninstall: run
 
-local.cluster.patch:
-	minikube addons enable registry
-	@kubectl patch daemonset -n kube-system registry-proxy --type='json' -p='[ \
-		{"op": "replace", "path": "/spec/selector/matchLabels", "value": { "kubernetes.io/minikube-addons": "registry-proxy", "addonmanager.kubernetes.io/mode":"Reconcile" } }, \
-		{"op": "replace", "path": "/spec/template/metadata/labels", "value": { "kubernetes.io/minikube-addons": "registry-proxy", "addonmanager.kubernetes.io/mode":"Reconcile" } } \
-		]'
+###Istio
+## install istio
+components.istio.install: run
 
-local.istio.install: fetch.infra
-	mkdir -p deploy/resources/istio/${ISTIO_VERSION}
-	mkdir -p deploy/values/istio/${ISTIO_VERSION}/
-	kubectl create namespace istio-system --dry-run -o yaml | kubectl apply -f -
-	kubectl label namespace istio-system --overwrite istio-injection=disabled
-	helm template deploy/charts/istio-${ISTIO_VERSION}/install/kubernetes/helm/istio-init --name istio-init --namespace istio-system > deploy/resources/istio/${ISTIO_VERSION}/istio-init.yaml
-	kubectl apply -f deploy/resources/istio/${ISTIO_VERSION}/istio-init.yaml
-	$(call wait_for_crds)
-	helm template deploy/charts/istio-${ISTIO_VERSION}/install/kubernetes/helm/istio --name istio --namespace istio-system  -f deploy/values/istio/${ISTIO_VERSION}/values.yaml > deploy/resources/istio/${ISTIO_VERSION}/istio.yaml
-	kubectl apply -f deploy/resources/istio/${ISTIO_VERSION}/istio.yaml
-gke.istio.install: fetch.infra
-	mkdir -p deploy/resources/istio/${ISTIO_VERSION}
-	mkdir -p deploy/values/istio/${ISTIO_VERSION}/
-	kubectl create namespace istio-system --dry-run -o yaml | kubectl apply -f -
-	kubectl label namespace istio-system --overwrite istio-injection=disabled
-	helm template deploy/charts/istio-${ISTIO_VERSION}/install/kubernetes/helm/istio-init --name istio-init --namespace istio-system > deploy/resources/istio/${ISTIO_VERSION}/istio-init.yaml
-	kubectl apply -f deploy/resources/istio/${ISTIO_VERSION}/istio-init.yaml
-	$(call wait_for_crds)
-	helm template deploy/charts/istio-${ISTIO_VERSION}/install/kubernetes/helm/istio --name istio --namespace istio-system  -f deploy/values/istio/${ISTIO_VERSION}/values.yaml > deploy/resources/istio/${ISTIO_VERSION}/istio.yaml
-	kubectl apply -f deploy/resources/istio/${ISTIO_VERSION}/istio.yaml
+## uninstall istio
+componenets.istio.uninstall: run
 
-local.tekton.install:
-	kubectl apply -f https://storage.googleapis.com/tekton-releases/latest/release.yaml
-	
-gke.tekton.install:
-	kubectl apply -f https://github.com/tektoncd/pipeline/releases/download/${TEKTON_PIPELINE_VERSION}/release.yaml
+###Knative
+## install knative
+components.knative.install: run
 
-gke.pipeline.create:
-	@sed -e 's/_PROJECT_ID/${PROJECT_ID}/g' \
-			-e 's/_GITHUB_STATUS_TOKEN/${GITHUB_STATUS_TOKEN}/g' \
-			ci/gke/build.yaml | kubectl apply -n tekton-pipelines -f -
-	kubectl get services.serving -n tekton-pipelines --no-headers=true -l receive-adapter=github | awk '{print $$1}' | xargs -I {} kubectl patch -n tekton-pipelines services.serving.knative.dev --type='json' {} -p='[{"op": "replace", "path": "/metadata/annotations", "value": { "receive-adapter": "github", "autoscaling.knative.dev/minScale": "1" } }]'
-gke.pipeline.restart:
-	kubectl delete -f ci/gke/build.yaml --ignore-not-found=true
-	kubectl delete pipelinerun -n tekton-pipelines -l tekton.dev/pipeline=cicd-pipeline
-	sed 's/_PROJECT_ID/${PROJECT_ID}/g' ci/gke/build.yaml | kubectl apply -n tekton-pipelines -f -
+## uninstall knative
+components.knative.uninstall: run
 
-local.tekton-dashboard.install:
-	@mkdir -p $$GOPATH/src/github.com/tektoncd/
-	@if [ ! -d $$GOPATH/src/github.com/tektoncd/dashboard ]; then \
-		cd $$GOPATH/src/github.com/tektoncd; git clone git@github.com:tektoncd/dashboard.git; \
-	fi
-	cd $$GOPATH/src/github.com/tektoncd/dashboard; git pull; kubectl apply -f config/release/gcr-tekton-dashboard.yaml
-	
+###Tekton
+## install tekton pipelines
+components.tekton.pipeline.install: run
 
-gke.tekton-dashboard.install:
-	@mkdir -p $$GOPATH/src/github.com/tektoncd/
-	@if [ ! -d $$GOPATH/src/github.com/tektoncd/dashboard ]; then \
-		cd $$GOPATH/src/github.com/tektoncd; git clone git@github.com:tektoncd/dashboard.git; \
-	fi
-	cd $$GOPATH/src/github.com/tektoncd/dashboard; git pull; kubectl apply -f config/release/gcr-tekton-dashboard.yaml
-	kubectl apply -f deploy/resources/tekton-dashboard/
-local.tekton-listener.install:
-	@mkdir -p $$GOPATH/src/github.com/tektoncd
-	@if [ ! -d $$GOPATH/src/github.com/tektoncd/experimental/tekton-listener ]; then \
-		cd $$GOPATH/src/github.com/tektoncd; git clone git@github.com:tektoncd/experimental.git; \
-	fi
-	cd $$GOPATH/src/github.com/tektoncd/experimental/tekton-listener; dep ensure
-	cd $$GOPATH/src/github.com/tektoncd/experimental/tekton-listener; KO_DOCKER_REPO=docker.io/castlemilk ko apply -f config
-local.tekton-webhook.install:
-	@mkdir -p $$GOPATH/src/github.com/tektoncd
-	@if [ ! -d $$GOPATH/src/github.com/tektoncd/experimental/tekton-listener ]; then \
-		cd $$GOPATH/src/github.com/tektoncd; git clone git@github.com:tektoncd/experimental.git; \
-	fi
-	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; git pull; kubectl delete --ignore-not-found=true -f config/release/gcr-tekton-webhooks-extension.yaml
-	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; git pull; kubectl apply -f config/release/gcr-tekton-webhooks-extension.yaml
-	kubectl delete pod -l app=tekton-dashboard -n tekton-pipelines
-	@kubectl patch svc -n tekton-pipelines webhooks-extension --type='json' -p='[{"op": "replace", "path": "/metadata/annotations/tekton-dashboard-bundle-location", "value": "web/extension.c526c42e.js" }]'
+## uninstall tekton pipelines
+components.tekton.pipeline.uninstall: run
 
-gke.tekton-webhook.install:
-	@mkdir -p $$GOPATH/src/github.com/tektoncd
-	@if [ ! -d $$GOPATH/src/github.com/tektoncd/experimental/tekton-listener ]; then \
-		cd $$GOPATH/src/github.com/tektoncd; git clone git@github.com:tektoncd/experimental.git; \
-	fi
-	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; kubectl delete --ignore-not-found=true -f config/release/gcr-tekton-webhooks-extension.yaml
-	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; git pull; kubectl apply -f config/release/gcr-tekton-webhooks-extension.yaml
-	kubectl delete pod -l app=tekton-dashboard -n tekton-pipelines
-	@kubectl patch svc -n tekton-pipelines webhooks-extension --type='json' -p='[{"op": "replace", "path": "/metadata/annotations/tekton-dashboard-bundle-location", "value": "web/extension.8fc66494.js" }]'
-	kubectl apply -f https://raw.githubusercontent.com/tektoncd/experimental/master/webhooks-extension/config/extension-service.yaml -n tekton-pipelines
-gke.tekton-webhook.update:
-	# @kubectl patch svc -n tekton-pipelines webhooks-extension --type='json' -p='[{"op": "replace", "path": "/metadata/annotations/tekton-dashboard-bundle-location", "value": "web/extension.8fc66494.js" }]'
-	kubectl apply -f https://raw.githubusercontent.com/tektoncd/experimental/master/webhooks-extension/config/extension-service.yaml -n tekton-pipelines
-local.knative.install:
-	@if [ "${KNATIVE_VERSION}" == "0.7.1" ]; then \
-		kubectl apply --selector knative.dev/crd-install=true \
-		--filename https://github.com/knative/serving/releases/download/v0.7.1/serving-post-1.14.yaml \
-		--filename https://github.com/knative/serving/releases/download/v0.7.1/serving-beta-crds.yaml \
-		--filename https://github.com/knative/eventing/releases/download/v0.7.1/release.yaml \
-		--filename https://github.com/knative/eventing-contrib/releases/download/v0.7.1/github.yaml; \
-		sleep 10; \
-		kubectl apply --selector networking.knative.dev/certificate-provider!=cert-manager \
-		--filename https://github.com/knative/serving/releases/download/v0.7.1/serving-post-1.14.yaml \
-		--filename https://github.com/knative/serving/releases/download/v0.7.1/serving-beta-crds.yaml \
-		--filename https://github.com/knative/eventing/releases/download/v0.7.1/release.yaml \
-		--filename https://github.com/knative/eventing-contrib/releases/download/v0.7.1/github.yaml; \
-	elif [ "${KNATIVE_VERSION}" == "0.6.1" ]; then \
-		kubectl apply --selector knative.dev/crd-install=true \
-			--filename https://github.com/knative/serving/releases/download/v0.6.1/serving.yaml \
-			--filename https://github.com/knative/eventing/releases/download/v0.6.1/release.yaml \
-			--filename https://github.com/knative/eventing-contrib/releases/download/v0.6.0/eventing-sources.yaml; \
-			sleep 10; \
-			kubectl apply --selector networking.knative.dev/certificate-provider!=cert-manager \
-			--filename https://github.com/knative/serving/releases/download/v0.6.1/serving.yaml \
-			--filename https://github.com/knative/eventing/releases/download/v0.6.1/release.yaml \
-			--filename https://github.com/knative/eventing-contrib/releases/download/v0.6.0/eventing-sources.yaml; \
-	fi
+## install tekton dashboard
+components.tekton.dashboard.install: run
 
-gke.knative.install:
-	@if [ "${KNATIVE_VERSION}" == "0.7.1" ]; then \
-		kubectl apply --selector knative.dev/crd-install=true \
-		--filename https://github.com/knative/serving/releases/download/v0.7.1/serving-post-1.14.yaml \
-		--filename https://github.com/knative/serving/releases/download/v0.7.1/serving-beta-crds.yaml \
-		--filename https://github.com/knative/eventing/releases/download/v0.7.1/release.yaml \
-		--filename https://github.com/knative/eventing-contrib/releases/download/v0.7.1/github.yaml; \
-		sleep 10; \
-		kubectl apply --selector networking.knative.dev/certificate-provider!=cert-manager \
-		--filename https://github.com/knative/serving/releases/download/v0.7.1/serving-post-1.14.yaml \
-		--filename https://github.com/knative/serving/releases/download/v0.7.1/serving-beta-crds.yaml \
-		--filename https://github.com/knative/eventing/releases/download/v0.7.1/release.yaml \
-		--filename https://github.com/knative/eventing-contrib/releases/download/v0.7.1/github.yaml; \
-	elif [ "${KNATIVE_VERSION}" == "0.6.1" ]; then \
-		kubectl apply --selector knative.dev/crd-install=true \
-			--filename https://github.com/knative/serving/releases/download/v0.6.1/serving.yaml \
-			--filename https://github.com/knative/eventing/releases/download/v0.6.1/release.yaml \
-			--filename https://github.com/knative/eventing-contrib/releases/download/v0.6.0/eventing-sources.yaml; \
-			sleep 10; \
-			kubectl apply --selector networking.knative.dev/certificate-provider!=cert-manager \
-			--filename https://github.com/knative/serving/releases/download/v0.6.1/serving.yaml \
-			--filename https://github.com/knative/eventing/releases/download/v0.6.1/release.yaml \
-			--filename https://github.com/knative/eventing-contrib/releases/download/v0.6.0/eventing-sources.yaml; \
-	fi
+## uninstall tekton dashboard
+components.tekton.dashboard.uninstall: run
 
-local.knative.status:
-	kubectl get pods --namespace knative-serving 
-	kubectl get pods --namespace knative-build
-	kubectl get pods --namespace knative-eventing
-	kubectl get pods --namespace knative-sources
-	kubectl get pods --namespace knative-monitoring
-## build project
-build.webapp:
-	go build -o webapp/bin/webapp ./webapp/cmd/webapp
-docker.login:
-	gcloud components install docker-credential-gcr
-	docker-credential-gcr configure-docker
-	gcloud auth configure-docker
-## run project
-run.webapp:
-	webapp/bin/webapp
+## install tekton triggers 
+components.tekton.triggers.install: run
 
-## start slidepack
-run.slides:
-	cd slides; npm run start
+## uninstall tekton triggers
+components.tekton.triggers.uninstall: run
 
+###Talk
+## start talk locally
+talk.start: run
 
-
-## install tekton to target cluster
-tekton.install:
-	kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user ben.ebsworth@digio.com.au --dry-run -o yaml | kubectl apply -f -
-	sleep 3
-	kubectl apply -f https://storage.googleapis.com/tekton-releases/latest/release.yaml
-docker.registry.create:
-	docker run -d -p 5000:5000 --name registry-srv -e REGISTRY_STORAGE_DELETE_ENABLED=true registry:2
-clean.skaffold:
-	pkill -f skaffold
-
-cluster.gke.install:
-	time gcloud container clusters create dev-xp \
-		--zone="australia-southeast1-a" \
-		--machine-type="n1-standard-2" \
-		--num-nodes="3" \
-		--project="${PROJECT_ID}" \
-		--no-user-output-enabled \
-		--scopes="https://www.googleapis.com/auth/cloud-platform"
-
-clean.knative:
-	# kubectl delete --ignore-not-found namespace knative-serving 
-	kubectl delete --ignore-not-found namespace knative-eventing
-	kubectl delete --ignore-not-found namespace knative-sources 
-	kubectl delete --ignore-not-found namespace knative-monitoring
-	kubectl delete --ignore-not-found namespace knative-build
-
-clean:
-	kubectl delete --ignore-not-found namespace istio-system
-	kubectl delete --ignore-not-found namespace knative-serving 
-	kubectl delete --ignore-not-found namespace knative-eventing
-	kubectl delete --ignore-not-found namespace knative-sources 
-	kubectl delete --ignore-not-found namespace knative-monitoring
-	kubectl delete --ignore-not-found namespace knative-build
-
+## build talk bundle.js
+talk.build: run
 ###Help
 ## Show help
 help:
 	@echo ''
-	@echo '######################### TRAINING MANAGER #########################'
+	@echo '######################### CICD FRAMEWORK MANAGER #########################'
 	@echo ''
 	@echo ''
 	@echo 'Usage:'

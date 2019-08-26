@@ -1,0 +1,10 @@
+CLUSTER=gke
+ISTIO_VERSION=1.2.4
+KNATIVE_VERSION=v0.8.0
+TEKTON_PIPELINE_VERSION=v0.6.0
+PROJECT_ID=kubernetes-cicd-246207
+BASE_ZONE=cicd.benebsworth.com
+NP_ZONE=np.cicd.benebsworth.com
+PROD_ZONE=prod.cicd.benebsworth.com
+DEFAULT_ZONE=default.cicd.benebsworth.com
+TEKTON_ZONE=tekton-pipelines.cicd.benebsworth.com

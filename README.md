@@ -90,6 +90,7 @@ Over time it would be great to extend the range of pipelines available to includ
     * extended git-triggering
     * utilise comments for git-ops workflows
 * implement container scanning and vulnerability reporting
-* implement different image builders - buildkit, buildah et al.  - comparing effectiveness
+* implement different image builders - buildKit, buildah et al.  - comparing effectiveness
 * implement binary authentication workflow for cluster admission validation
 * implement Open Policy Agent based workflows, enforcing pipeline conformance and quality controls both for general use and specifically for kubernetes related admission
+* support multi-cloud environments
