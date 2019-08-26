@@ -7,22 +7,20 @@ RED		 := $(shell tput -Txterm setaf 1)
 CYAN	 := $(shell tput -Txterm setaf 6)
 RESET  := $(shell tput -Txterm sgr0)
 
--include .credentials
--include local.parameters
--include ${CLUSTER}.parameters
--include common.mk 
+TOPLVL=..
+-include $(TOPLVL)/common.mk 
 
 ## test backend app
-unittest.backend:
-	cd app/src/backend; go clean -testcache
-	cd app/src/backend; go test ./... -mod=vendor -run=Unit -v
+backend-unittest:
+	cd src/backend; go clean -testcache
+	cd src/backend; go test ./... -mod=vendor -run=Unit -v
 
 ## integration test backend app
-integrationtest.backend:
-	cd app/src/backend; go clean -testcache	
-	cd app/src/backend; go test ./... -mod=vendor -run=Integration -v
+backend-integrationtest:
+	cd src/backend; go clean -testcache	
+	cd src/backend; go test ./... -mod=vendor -run=Integration -v
 
-open.local:
+open:
 	@BACKEND_ADDRESS=`kubectl get svc products-backend --namespace development --output 'jsonpath={.spec.clusterIP}'`; \
 	if grep -i "api.demo.local" /etc/hosts; then \
 		sudo sed -i -e "s/.*api.demo.local/$$BACKEND_ADDRESS api.demo.local/" /etc/hosts; \
@@ -38,7 +36,7 @@ open.local:
 	open http://products.demo.local
 
 ## start local development
-local.dev:
+local-development:
 	@eval $(minikube docker-env)
 	kubectx minikube
 	@kubectl create namespace dev --dry-run -o yaml | kubectl apply -f -
@@ -61,30 +59,31 @@ local.dev:
 	open http://products.demo.local
 	ENV=local skaffold dev -p local
 
-staging.dev:
+staging-development:
 	@eval $(minikube docker-env)
 	@kubectx gke_kubernetes-cicd-246207_australia-southeast1-a_kubernetes-cicd
 	@kubectl create namespace np --dry-run -o yaml | kubectl apply -f -
 	ENV=staging skaffold dev -p staging --cleanup=false --no-prune=true
 	open http://products.np.cicd.benebsworth.com
 
-prod.restart:
+production-deploy:
 	@kubectx gke_kubernetes-cicd-246207_australia-southeast1-a_kubernetes-cicd
 	skaffold run -p production-full
 
 ## build project
-build.webapp:
+build-backend:
 	go build -o webapp/bin/webapp ./webapp/cmd/webapp
-docker.login:
+
+
+docker-login:
 	gcloud components install docker-credential-gcr
 	docker-credential-gcr configure-docker
 	gcloud auth configure-docker
-## run project
-run.webapp:
-	webapp/bin/webapp
 
-clean.skaffold:
+
+clean:
 	pkill -f skaffold
+	cd src/backend; go clean -testcache
 
 ###Help
 ## Show help

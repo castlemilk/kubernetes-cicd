@@ -7,9 +7,9 @@ RED		 := $(shell tput -Txterm setaf 1)
 CYAN	 := $(shell tput -Txterm setaf 6)
 RESET  := $(shell tput -Txterm sgr0)
 
--include ../common.mk 
+TOPLVL=..
 
-
+-include $(TOPLVL)/common.mk 
 
 ## start slidepack
 start:

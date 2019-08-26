@@ -45,15 +45,7 @@ import RampUp from '../../../assets/ramp-up.jpg'
 import Yaml from '../../../assets/yaml.jpg'
 import Templating from '../../../assets/templating.jpg'
 import Github from '../../../assets/github.jpg'
-const STYLE = {
-  blue: { color: '#2196f3' },
-  yellow: { color: 'yellow' },
-  green: { color: 'green' }
-}
-const gitClone = `$ git clone git@gitlab.mantelgroup.com.au:future-tech/istio-training.git
-$ cd istio-training
-$ make bootstrap
-`
+
 const COLOR_PALLETE = {
   blue: '#4285f4',
   red: '#d8133a',
