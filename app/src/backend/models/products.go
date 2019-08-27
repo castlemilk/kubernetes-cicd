@@ -50,7 +50,7 @@ func GetProduct(db *gorm.DB, ID string) (ProductDetails, error) {
 		return product, err
 	}
 	// --------------- ENABLE_RATING ----------------------
-	product.Ratings, err = GetProductRatings(db, ID)
+	// product.Ratings, err = GetProductRatings(db, ID)
 	// ----------------------------------------------------
 
 	return product, err
