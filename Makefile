@@ -16,22 +16,22 @@ run:
 
 ###Kubernetes
 ## install minikube based kubernetes cluster
-componenets.kubernetes.minikube.install: run
+components.kubernetes.minikube.install: run
 
 ## destroy minikube based kubernetes cluster
-componenets.kubernetes.minikube.uninstall: run
+components.kubernetes.minikube.uninstall: run
 
 ## install gke based kubernetes cluster
-componenets.kubernetes.gke.install: run
+components.kubernetes.gke.install: run
 
 ## destroy gke based kubernetes cluster (careful)
-componenets.kubernetes.gke.uninstall: run
+components.kubernetes.gke.uninstall: run
 
 ## pause cluster (scale workers down)
-componenets.kubernetes.gke.pause: run
+components.kubernetes.gke.pause: run
 
 ## resume cluster (scale workers up)
-componenets.kubernetes.gke.resume: run
+components.kubernetes.gke.resume: run
 
 ## install eks based kubernetes cluster
 components.kubernetes.eks.install: run
