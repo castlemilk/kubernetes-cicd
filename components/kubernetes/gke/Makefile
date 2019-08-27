@@ -37,7 +37,7 @@ resume:
 	kubectl scale deployment -n knative-serving webhook --replicas 1
 
 ## delete gke cluster
-delete:
+destroy:
 	gcloud beta container clusters delete kubernetes-cicd --zone="australia-southeast1-a"
 
 ## configure DNS settings for IP assigned to ingress-gateway

@@ -7,11 +7,12 @@ RED		 := $(shell tput -Txterm setaf 1)
 CYAN	 := $(shell tput -Txterm setaf 6)
 RESET  := $(shell tput -Txterm sgr0)
 
--include ../../common.mk
+TOPLVL=../..
+-include $(TOPLVL)/common.mk
 
 ## create tekton pipeline
 create:
-	@sed \
+	sed \
 		-e 's/_PROJECT_ID/${PROJECT_ID}/g' \
 		-e 's/_GITHUB_STATUS_TOKEN/${GITHUB_STATUS_TOKEN}/g' \
 		${CLUSTER}/cicd.yaml | kubectl apply -n tekton-pipelines -f -
