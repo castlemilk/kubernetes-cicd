@@ -22,6 +22,7 @@ define wait_for_deployment
 endef
 
 define wait_for_ns_termination
+	
 	@printf "🌀   removing $(1) namespace";
 	@while [ "$$(kubectl get namespace $(1) > /dev/null 2>&1; echo $$?)" = "0" ]; do printf "."; sleep 2; done;
 	@printf " ✅\n";

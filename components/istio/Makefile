@@ -29,6 +29,7 @@ install: fetch.infra
 	kubectl create namespace istio-system --dry-run -o yaml | kubectl apply -f -
 	kubectl label namespace istio-system --overwrite istio-injection=disabled
 	helm template charts/istio-${ISTIO_VERSION}/install/kubernetes/helm/istio-init --name istio-init --namespace istio-system > resources/${CLUSTER}/${ISTIO_VERSION}/istio-init.yaml
+	kubectl delete jobs --all -n istio-system
 	kubectl apply -f resources/${CLUSTER}/${ISTIO_VERSION}/istio-init.yaml
 	$(call wait_for_crds)
 	helm template charts/istio-${ISTIO_VERSION}/install/kubernetes/helm/istio --name istio --namespace istio-system  -f values/${CLUSTER}/${ISTIO_VERSION}/values.yaml > resources/${CLUSTER}/${ISTIO_VERSION}/istio.yaml

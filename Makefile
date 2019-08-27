@@ -14,6 +14,10 @@ RESET  := $(shell tput -Txterm sgr0)
 run:
 	$(MAKET)
 
+all.gstack.local: components.kubernetes.minikube.install components.istio.install components.knative.install components.tekton.pipeline.install components.tekton.dashboard.install components.tekton.triggers.install
+
+all.gstack.gke: components.kubernetes.gke.install components.istio.install components.knative.install components.tekton.pipeline.install components.tekton.dashboard.install components.tekton.triggers.install
+
 ###Kubernetes
 ## install minikube based kubernetes cluster
 components.kubernetes.minikube.install: run
@@ -22,10 +26,10 @@ components.kubernetes.minikube.install: run
 components.kubernetes.minikube.uninstall: run
 
 ## install gke based kubernetes cluster
-components.kubernetes.gke.install: run
+components.kubernetes.gke.create: run
 
 ## destroy gke based kubernetes cluster (careful)
-components.kubernetes.gke.uninstall: run
+components.kubernetes.gke.destroy: run
 
 ## pause cluster (scale workers down)
 components.kubernetes.gke.pause: run
@@ -34,10 +38,10 @@ components.kubernetes.gke.pause: run
 components.kubernetes.gke.resume: run
 
 ## install eks based kubernetes cluster
-components.kubernetes.eks.install: run
+components.kubernetes.eks.create: run
 
 ## destroy eks based kubernetes cluster
-components.kubernetes.eks.uninstall: run
+components.kubernetes.eks.destroy: run
 
 ###Istio
 ## install istio
@@ -66,11 +70,25 @@ components.tekton.dashboard.install: run
 ## uninstall tekton dashboard
 components.tekton.dashboard.uninstall: run
 
+## install tekton dashboard webhook plugin
+components.tekton.webhook.install: run
+
+## uninstall tekton dashboard webhook plugin
+components.tekton.webhook.uninstall: run
+
 ## install tekton triggers 
 components.tekton.triggers.install: run
 
 ## uninstall tekton triggers
 components.tekton.triggers.uninstall: run
+
+###Pipelines
+
+## create tekton cicd pipeline
+pipelines.tekton.create: run
+
+## delete tekton cicd pipeline
+pipelines.tekton.delete: run
 
 ###Talk
 ## start talk locally

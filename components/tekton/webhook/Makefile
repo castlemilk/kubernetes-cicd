@@ -17,9 +17,9 @@ install:
 		cd $$GOPATH/src/github.com/tektoncd; git clone git@github.com:tektoncd/experimental.git; \
 	fi
 	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; kubectl delete --ignore-not-found=true -f config/release/gcr-tekton-webhooks-extension.yaml
-	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; git pull; kubectl apply -f config/release/gcr-tekton-webhooks-extension.yaml
+	cd $$GOPATH/src/github.com/tektoncd/experimental/webhooks-extension; git stash; git pull origin master; kubectl apply -f config/release/gcr-tekton-webhooks-extension.yaml
 	kubectl delete pod -l app=tekton-dashboard -n tekton-pipelines
-	@kubectl patch svc -n tekton-pipelines webhooks-extension --type='json' -p='[{"op": "replace", "path": "/metadata/annotations/tekton-dashboard-bundle-location", "value": "web/extension.8fc66494.js" }]'
+	@kubectl patch svc -n tekton-pipelines webhooks-extension --type='json' -p='[{"op": "replace", "path": "/metadata/annotations/tekton-dashboard-bundle-location", "value": "web/extension.96c06bbb.js" }]'
 	kubectl apply -f https://raw.githubusercontent.com/tektoncd/experimental/master/webhooks-extension/config/extension-service.yaml -n tekton-pipelines
 
 ## remove webhook plugin

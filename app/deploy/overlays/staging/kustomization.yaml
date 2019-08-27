@@ -2,8 +2,8 @@ bases:
 - ../../backend/overlays/staging
 - ../../frontend/overlays/staging
 - ../../postgres/overlays/staging
-# resources:
-# - namespace.yaml
+resources:
+- namespace.yaml
 namespace: np 
 commonAnnotations:
   context: demo-app
