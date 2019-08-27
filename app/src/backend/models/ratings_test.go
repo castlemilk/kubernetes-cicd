@@ -1,14 +1,13 @@
 package models
 
-
 import (
+	"backend/db"
 	"github.com/DATA-DOG/go-sqlmock"
 	uuid "github.com/satori/go.uuid"
-	"testing"
 	"regexp"
-	"backend/db"
-
+	"testing"
 )
+
 func TestCreateRatingUnit(t *testing.T) {
 	sdb, mock, err := sqlmock.New()
 	if err != nil {
@@ -16,7 +15,7 @@ func TestCreateRatingUnit(t *testing.T) {
 	}
 	DB, err := db.CreateDB(sdb)
 	if err != nil {
-		t.Errorf("error creating databse %s", err)	
+		t.Errorf("error creating databse %s", err)
 	}
 	id := uuid.NewV4()
 	createColumns := []string{"id"}
@@ -27,7 +26,7 @@ func TestCreateRatingUnit(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows(createColumns).AddRow("00000000-0000-0000-0000-000000000000"))
 	mock.ExpectCommit()
 	if _, err := CreateRating(DB, ratingTest); err != nil {
-		t.Errorf("there was error creating product: %s", err)	
+		t.Errorf("there was error creating product: %s", err)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)

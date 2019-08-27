@@ -38,7 +38,7 @@ func TestAPIIntegrationGetProduct(t *testing.T) {
 		"title":       "Avocado",
 		"description": "Fresh and perfectly ripe Avocadoes",
 		"image_url":   "avocado.png",
-		"ratings": models.RatingsAverage{TotalRatings: 13, Average: 1.1},
+		"ratings":     models.RatingsAverage{TotalRatings: 13, Average: 1.1},
 	}
 	db.Init()
 	// Grab our router
@@ -139,9 +139,9 @@ func TestAPIIntegrationCreateRating(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	// Convert the JSON response to a map
-	var response models.RatingCreated 
+	var response models.RatingCreated
 	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
-		t.Errorf("failed to unmarshal response: %s", err)	
+		t.Errorf("failed to unmarshal response: %s", err)
 	}
 
 	// Grab the value & whether or not it exists
@@ -169,7 +169,7 @@ func TestAPIIntegrationDeleteRating(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	// Convert the JSON response to a map
-	var response models.RatingCreated 
+	var response models.RatingCreated
 
 	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
 		t.Errorf("failed to unmarshal response: %s", err)

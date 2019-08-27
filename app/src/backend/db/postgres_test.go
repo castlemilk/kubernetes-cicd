@@ -1,10 +1,10 @@
 package db
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/stretchr/testify/assert"
 	"os"
+	"testing"
 )
 
 func TestDatabaseInit(t *testing.T) {
