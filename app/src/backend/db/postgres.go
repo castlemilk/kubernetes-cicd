@@ -1,12 +1,12 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
+	"github.com/jinzhu/gorm"
+	_ "github.com/lib/pq"
 	"log"
 	"os"
-	_ "github.com/lib/pq"
-	"database/sql"
-	"github.com/jinzhu/gorm"
 )
 
 // getEnv - fetch environment variables
@@ -56,4 +56,3 @@ func CreateDB(newDb *sql.DB) (*gorm.DB, error) {
 	db, err = gorm.Open("postgres", newDb)
 	return db, err
 }
-

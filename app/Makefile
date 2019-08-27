@@ -74,7 +74,10 @@ production-deploy:
 build-backend:
 	go build -o webapp/bin/webapp ./webapp/cmd/webapp
 
-
+## lint
+lint:
+	cd src/backend; go fmt ./...
+	cd src/backend; golangci-lint run ./...
 docker-login:
 	gcloud components install docker-credential-gcr
 	docker-credential-gcr configure-docker

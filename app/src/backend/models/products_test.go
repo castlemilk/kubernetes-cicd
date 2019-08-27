@@ -1,13 +1,13 @@
 package models
 
-
 import (
+	"backend/db"
 	"github.com/DATA-DOG/go-sqlmock"
 	uuid "github.com/satori/go.uuid"
-	"testing"
 	"regexp"
-	"backend/db"
+	"testing"
 )
+
 func TestCreateProductsUnit(t *testing.T) {
 	sdb, mock, err := sqlmock.New()
 	if err != nil {
@@ -15,17 +15,17 @@ func TestCreateProductsUnit(t *testing.T) {
 	}
 	DB, err := db.CreateDB(sdb)
 	if err != nil {
-		t.Errorf("error creating databse %s", err)	
+		t.Errorf("error creating databse %s", err)
 	}
 	createColumns := []string{"id"}
 	productTest := ProductDetails{Name: "TEST", ImageURL: "test.png", Description: "test", Title: "test"}
 	mock.ExpectBegin()
 	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "products"`)).
-		WithArgs("TEST","test","test","test.png").
+		WithArgs("TEST", "test", "test", "test.png").
 		WillReturnRows(sqlmock.NewRows(createColumns).AddRow("00000000-0000-0000-0000-000000000000"))
 	mock.ExpectCommit()
 	if _, err := CreateProduct(DB, productTest); err != nil {
-		t.Errorf("there was error creating product: %s", err)	
+		t.Errorf("there was error creating product: %s", err)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
@@ -39,14 +39,14 @@ func TestGetProductUnit(t *testing.T) {
 	}
 	DB, err := db.CreateDB(sdb)
 	if err != nil {
-		t.Errorf("error creating databse %s", err)	
+		t.Errorf("error creating databse %s", err)
 	}
 	createColumns := []string{"id"}
 	productTest := ProductDetails{Name: "TEST", ImageURL: "test.png", Description: "test", Title: "test"}
 	mock.ExpectBegin()
 	// create product
 	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "products"`)).
-		WithArgs("TEST","test","test","test.png").
+		WithArgs("TEST", "test", "test", "test.png").
 		WillReturnRows(sqlmock.NewRows(createColumns).AddRow("00000000-0000-0000-0000-000000000000"))
 	mock.ExpectCommit()
 	// get product
@@ -78,11 +78,11 @@ func TestGetProductUnit(t *testing.T) {
 	}
 	// create rating
 	if _, err := CreateRating(DB, ratingTest); err != nil {
-		t.Errorf("there was error creating product: %s", err)	
+		t.Errorf("there was error creating product: %s", err)
 	}
 	// get product
 	if _, err := GetProduct(DB, productTestID.String()); err != nil {
-		t.Errorf("error getting product: %s", err)	
+		t.Errorf("error getting product: %s", err)
 	}
 
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -97,13 +97,13 @@ func TestListProductsUnit(t *testing.T) {
 	}
 	DB, err := db.CreateDB(sdb)
 	if err != nil {
-		t.Errorf("error creating databse %s", err)	
+		t.Errorf("error creating databse %s", err)
 	}
 	createColumns := []string{"id"}
 	productTest := ProductDetails{Name: "TEST", ImageURL: "test.png", Description: "test", Title: "test"}
 	mock.ExpectBegin()
 	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "products"`)).
-		WithArgs("TEST","test","test","test.png").
+		WithArgs("TEST", "test", "test", "test.png").
 		WillReturnRows(sqlmock.NewRows(createColumns).AddRow("00000000-0000-0000-0000-000000000000"))
 	mock.ExpectCommit()
 	getColumns := []string{"id", "name", "title", "description", "image_url"}
@@ -115,7 +115,7 @@ func TestListProductsUnit(t *testing.T) {
 	}
 	// CreateProduct(DB, productTest)
 	if _, err := ListProducts(DB); err != nil {
-		t.Errorf("error getting list of products: %s", err)	
+		t.Errorf("error getting list of products: %s", err)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
