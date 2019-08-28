@@ -22,7 +22,7 @@ type ProductDetails struct { // table name: products
 	Description string    `json:"description" gorm:"column:descr" binding:"required"`
 	ImageURL    string    `json:"image_url" binding:"required"`
 	// ----------------- ENABLE_RATING --------------------
-	Ratings RatingsAverage `json:"ratings" gorm:"-"`
+	// Ratings RatingsAverage `json:"ratings" gorm:"-"`
 	// ----------------------------------------------------
 }
 
