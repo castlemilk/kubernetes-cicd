@@ -4,11 +4,14 @@
 # Note: please only put common configuration for the demo profiles here.
 global:
   controlPlaneSecurityEnabled: true
+  disablePolicyChecks: true
   mtls:
     # Default setting for service-to-service mtls. Can be set explicitly using
     # destination rules or service annotations.
     enabled: true
   proxy:
+    disablePolicyChecks: true
+    autoInject: disabled
     accessLogFile: "/dev/stdout"
     resources:
       requests:
@@ -17,11 +20,14 @@ global:
     accessLogFormat: ""
     # Configure the access log for sidecar to JSON or TEXT.
     accessLogEncoding: TEXT
-
-  disablePolicyChecks: false
+  # enable pod distruption budget for the control plane, which is used to
+  # ensure Istio control plane components are gradually upgraded or recovered.
+  defaultPodDisruptionBudget:
+    enabled: false  
 
 sidecarInjectorWebhook:
   enabled: true
+  enableNamespacesByDefault: true
   # If true, webhook or istioctl injector will rewrite PodSpec for liveness
   # health check to redirect request to sidecar. This makes liveness check work
   # even when mTLS is enabled.

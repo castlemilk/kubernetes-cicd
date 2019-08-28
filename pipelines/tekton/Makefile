@@ -19,8 +19,10 @@ create:
 
 ## delete tekton pipeline
 delete:
-	kubectl delete -f ${CLUSTER}/cicd.yaml --ignore-not-found=true
-	kubectl delete pipelinerun -n tekton-pipelines -l tekton.dev/pipeline=cicd-pipeline
+	sed \
+		-e 's/_PROJECT_ID/${PROJECT_ID}/g' \
+		-e 's/_GITHUB_STATUS_TOKEN/${GITHUB_STATUS_TOKEN}/g' \
+		${CLUSTER}/cicd.yaml | kubectl delete -n tekton-pipelines -f -
 
 ## re-create pipeline
 recreate: delete create
