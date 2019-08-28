@@ -20,11 +20,13 @@ type RatingSummary struct { // table name: ratings
 	ProductID uuid.UUID `json:"product_id" binding:"required"`
 }
 
+// RatingsAverageQuery "Object"
 type RatingsAverageQuery struct {
 	TotalRatings int     `gorm:"total_ratings"`
 	SumRatings   float64 `gorm:"sum_ratings"`
 }
 
+// RatingsAverage "Object"
 type RatingsAverage struct {
 	TotalRatings int     `json:"total_ratings"`
 	Average      float64 `json:"average_rating"`
