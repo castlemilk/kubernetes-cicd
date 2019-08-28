@@ -21,6 +21,11 @@ install:
 	cd $$GOPATH/src/github.com/tektoncd/dashboard; git pull; kubectl apply -f config/release/gcr-tekton-dashboard.yaml
 	kubectl apply -f resources/
 
+install-master:
+	cd $$GOPATH/src/github.com/tektoncd; npm install
+	cd $$GOPATH/src/github.com/tektoncd; npm run build_ko
+	cd $$GOPATH/src/github.com/tektoncd; kubectl apply -f 	
+
 ## install tekton dashboard
 uninstall:
 	cd $$GOPATH/src/github.com/tektoncd/dashboard; kubectl delete -f config/release/gcr-tekton-dashboard.yaml

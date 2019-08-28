@@ -9,7 +9,7 @@ spec:
  check:
     image: alpine
     command: ["/bin/sh"]
-    args: ['-c', 'echo "Check if tag[${params.tag}] is a valid release candidate" && [ -z "${params.tag##*release*}" ]']
+    args: ['-c', 'echo "Check if tag[${params.tag}] is a valid release candidate" && echo "${params.tag}" | grep -q ".*release.*"']
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
@@ -498,7 +498,7 @@ spec:
         - conditionRef: "release-candidate"
           params:
             - name: "tag"
-              value: "${params.image-tag"
+              value: "${params.image-tag}"
 ---
 # apiVersion: tekton.dev/v1alpha1
 # kind: PipelineRun
