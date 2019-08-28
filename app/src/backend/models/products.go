@@ -22,7 +22,7 @@ type ProductDetails struct { // table name: products
 	Description string    `json:"description" gorm:"column:descr" binding:"required"`
 	ImageURL    string    `json:"image_url" binding:"required"`
 	// ----------------- ENABLE_RATING --------------------
-	// Ratings RatingsAverage `json:"ratings" gorm:"-"`
+	Ratings RatingsAverage `json:"ratings" gorm:"-"`
 	// ----------------------------------------------------
 }
 
@@ -50,7 +50,7 @@ func GetProduct(db *gorm.DB, ID string) (ProductDetails, error) {
 		return product, err
 	}
 	// --------------- ENABLE_RATING ----------------------
-	// product.Ratings, err = GetProductRatings(db, ID)
+	product.Ratings, err = GetProductRatings(db, ID)
 	// ----------------------------------------------------
 
 	return product, err
