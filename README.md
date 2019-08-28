@@ -1,6 +1,6 @@
 # Kubernetes-Centric CI/CD
 
-This repository captures the talk and demonstration carried presented at x,y,z. The aim is to cover the current Kubernetes ecosystem, which enables an entirely Kubernetes based CI and CD solution to be implemented. We also discuss the benefits of this and why you should care.
+This repository captures the talk and demonstration presented at `{x,y,z}`. The aim is to cover the current Kubernetes ecosystem, which enables an entirely Kubernetes based CI and CD solution to be implemented. We also discuss the benefits of this and why you should care.
 
 ## Contents
 
