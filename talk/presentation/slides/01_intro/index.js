@@ -38,6 +38,9 @@ import PipelinesWeaveFlux from '../../../assets/pipelines-weaveflux.jpg'
 import DevXPFeatures from '../../../assets/devxp-features.jpg'
 import DevXPSkaffold from '../../../assets/devxp-skaffold.jpg'
 import PipelineArchitecture from '../../../assets/pipeline-architecture.jpg'
+import LocalEnvironment from '../../../assets/local-environment.jpg'
+import StagingEnvironment from '../../../assets/staging-environment.jpg'
+import ProductionEnvironment from '../../../assets/production-environment.jpg'
 import DevXPTilt from '../../../assets/devxp-tilt.jpg'
 import DevXPGarden from '../../../assets/devxp-garden.jpg'
 import LocalDevelopment from '../../../assets/local_development.jpg'
@@ -266,7 +269,7 @@ export default [
   <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
   <Heading textColor={COLOR_PALLETE['purple']}>CI/CD Pipeline</Heading>
   <Image margin={"100px auto"} height={600} src={PipelineArchitecture} />
-</Slide>,
+  </Slide>,
   <CodeSlide
   transition={['fade']}
   padding={0}
@@ -280,6 +283,18 @@ export default [
   code={require('raw-loader!./code-examples/build.txt')}
   ranges={tektonConfig}
   />,
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
+  <Heading textColor={COLOR_PALLETE['green']}>Local Environment</Heading>
+  <Image margin={"100px auto"} height={600} src={LocalEnvironment} />
+  </Slide>,
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
+  <Heading textColor={COLOR_PALLETE['blue']}>Staging Environment</Heading>
+  <Image margin={"100px auto"} height={600} src={StagingEnvironment} />
+  </Slide>,
+  <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
+  <Heading textColor={COLOR_PALLETE['red']}>Production Environment</Heading>
+  <Image margin={"100px auto"} height={600} src={ProductionEnvironment} />
+  </Slide>,
   <Slide align='center center' transition={['zoom']} bgColor='primary'>
     <Image style={{animation: 'rotation 10s linear infinite'}} src={Kubernetes} />
     <Heading
