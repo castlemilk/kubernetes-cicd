@@ -90,6 +90,26 @@ pipelines.tekton.create: run
 ## delete tekton cicd pipeline
 pipelines.tekton.delete: run
 
+
+###Application-Development
+## run integration tests against dependencies
+app.backend-integrationtest: run
+
+## run linting/formatting
+app.lint: run
+## run unit tests
+app.backend-unittest: run
+
+## start local development deployment
+app.local-development: run
+
+## start staging development deployment
+app.staging-development: run
+
+## deploy to prod directly (careful)
+app.production-deploy: run
+
+
 ###Talk
 ## start talk locally
 talk.start: run
