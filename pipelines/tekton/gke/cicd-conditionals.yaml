@@ -1,4 +1,17 @@
 apiVersion: tekton.dev/v1alpha1
+kind: Condition
+metadata:
+  name: release-candidate
+spec:
+ params:
+   - name: "tag"
+     type: string
+ check:
+    image: alpine
+    command: ["/bin/sh"]
+    args: ['-c', 'echo "Check if tag[${params.tag}] is a valid release candidate" && echo "${params.tag}" | grep -q ".*release.*"']
+---
+apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
   name: git-source
@@ -22,6 +35,16 @@ roleRef:
   kind: ClusterRole
   name: cluster-admin
   apiGroup: rbac.authorization.k8s.io
+---
+# apiVersion: tekton.dev/v1alpha1
+# kind: PipelineResource
+# metadata:
+#   name: frontend-image
+# spec:
+#   type: image
+#   params:
+#     - name: url
+#       value: gcr.io/_PROJECT_ID/demo/frontend
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
@@ -471,19 +494,9 @@ spec:
       inputs:
       - name: workspace
         resource: git-source
+    conditions:
+        - conditionRef: "release-candidate"
+          params:
+            - name: "tag"
+              value: "${params.image-tag}"
 ---
-# apiVersion: tekton.dev/v1alpha1
-# kind: PipelineRun
-# metadata:
-#   name: cicd-pipeline-run-1
-# spec:
-#   serviceAccount: 'default'
-#   pipelineRef:
-#     name: cicd-pipeline
-#   resources:
-#   - name: git-source
-#     resourceRef:
-#       name: git-source
-#   - name: docker-image
-#     resourceRef:
-#       name: docker-image
