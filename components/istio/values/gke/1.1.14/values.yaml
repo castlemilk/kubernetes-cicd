@@ -3,37 +3,38 @@
 # Includes components used in the demo, defaults to alpha3 rules.
 # Note: please only put common configuration for the demo profiles here.
 global:
-  defaultPodDisruptionBudget:
-    enabled: false
+  controlPlaneSecurityEnabled: true
+  disablePolicyChecks: true
+  mtls:
+    # Default setting for service-to-service mtls. Can be set explicitly using
+    # destination rules or service annotations.
+    enabled: true
   proxy:
+    disablePolicyChecks: true
     autoInject: disabled
     accessLogFile: "/dev/stdout"
     resources:
       requests:
         cpu: 10m
         memory: 40Mi
-  controlPlaneSecurityEnabled: true
-  mtls:
-    # Default setting for service-to-service mtls. Can be set explicitly using
-    # destination rules or service annotations.
-    enabled: true
-  disablePolicyChecks: true
-
-  sidecarInjectorWebhook:
-    enabled: true
-    # If true, webhook or istioctl injector will rewrite PodSpec for liveness
-    # health check to redirect request to sidecar. This makes liveness check work
-    # even when mTLS is enabled.
-    rewriteAppHTTPProbe: false
+    accessLogFormat: ""
+    # Configure the access log for sidecar to JSON or TEXT.
+    accessLogEncoding: TEXT
+  # enable pod distruption budget for the control plane, which is used to
+  # ensure Istio control plane components are gradually upgraded or recovered.
+  defaultPodDisruptionBudget:
+    enabled: false
 sidecarInjectorWebhook:
   enabled: true
   enableNamespacesByDefault: true
-  rewriteAppHTTPProbe: true
+  # If true, webhook or istioctl injector will rewrite PodSpec for liveness
+  # health check to redirect request to sidecar. This makes liveness check work
+  # even when mTLS is enabled.
+  rewriteAppHTTPProbe: true  
 pilot:
   traceSampling: 0.50
   autoscaleMin: 1
-  autoscaleMax: 1
-  replicaCount: 1
+  autoscaleMax: 1                                            
   resources:
     requests:
       cpu: 30m

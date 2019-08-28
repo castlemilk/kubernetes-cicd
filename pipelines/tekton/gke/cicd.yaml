@@ -1,4 +1,17 @@
 apiVersion: tekton.dev/v1alpha1
+kind: Condition
+metadata:
+  name: release-candidate
+spec:
+ params:
+   - name: "tag"
+     type: string
+ check:
+    image: alpine
+    command: ["/bin/sh"]
+    args: ['-c', 'echo "Check if tag[${params.tag}] is a valid release candidate" && [ -z "${params.tag##*release*}" ]']
+---
+apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
   name: git-source
@@ -481,6 +494,11 @@ spec:
       inputs:
       - name: workspace
         resource: git-source
+    conditions:
+        - conditionRef: "release-candidate"
+          params:
+            - name: "tag"
+              value: "${params.image-tag"
 ---
 # apiVersion: tekton.dev/v1alpha1
 # kind: PipelineRun
