@@ -37,6 +37,7 @@ install: fetch.infra
 
 ## uninstall istio from cluster
 uninstall:
+	kubectl delete --ignore-not-found=true -f resources/${CLUSTER}/${ISTIO_VERSION}/istio.yaml	
 	$(call wait_for_ns_termination,istio-system)
 ###Help
 ## Show help

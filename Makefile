@@ -14,16 +14,16 @@ RESET  := $(shell tput -Txterm sgr0)
 run:
 	$(MAKET)
 
-all.gstack.local: components.kubernetes.minikube.install components.istio.install components.knative.install components.tekton.pipeline.install components.tekton.dashboard.install components.tekton.triggers.install
+all.gstack.local: components.kubernetes.minikube.create components.istio.install components.knative.install components.tekton.pipeline.install components.tekton.dashboard.install components.tekton.triggers.install
 
-all.gstack.gke: components.kubernetes.gke.install components.istio.install components.knative.install components.tekton.pipeline.install components.tekton.dashboard.install components.tekton.triggers.install
+all.gstack.gke: components.kubernetes.gke.create components.istio.install components.knative.install components.tekton.pipeline.install components.tekton.dashboard.install components.tekton.triggers.install
 
 ###Kubernetes
 ## install minikube based kubernetes cluster
-components.kubernetes.minikube.install: run
+components.kubernetes.minikube.create: run
 
 ## destroy minikube based kubernetes cluster
-components.kubernetes.minikube.uninstall: run
+components.kubernetes.minikube.destroy: run
 
 ## install gke based kubernetes cluster
 components.kubernetes.gke.create: run
@@ -48,7 +48,7 @@ components.kubernetes.eks.destroy: run
 components.istio.install: run
 
 ## uninstall istio
-componenets.istio.uninstall: run
+components.istio.uninstall: run
 
 ###Knative
 ## install knative
