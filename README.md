@@ -2,6 +2,10 @@
 
 This repository captures the talk and demonstration presented at `{x,y,z}`. The aim is to cover the current Kubernetes ecosystem, which enables an entirely Kubernetes based CI and CD solution to be implemented. We also discuss the benefits of this and why you should care.
 
+A deeper dive into the workflows and core concepts can be found in the blog series as follows:
+
+* [Developer Experience](https://benebsworth.com/kubernetes-cicd-part-1/)
+
 ## Contents
 
 [Installation](./docs/install.md)
