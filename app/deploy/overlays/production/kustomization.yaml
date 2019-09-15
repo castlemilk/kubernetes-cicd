@@ -1,6 +1,7 @@
 bases:
 - ../../backend/overlays/production
 - ../../frontend/overlays/production
+- ../../postgres/overlays/production
 resources:
 - namespace.yaml
 namespace: prod

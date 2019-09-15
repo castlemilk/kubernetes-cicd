@@ -81,7 +81,7 @@ profiles:
     build: {}
     deploy:
       kustomize:
-        path: deploy/postgres/overlays/production
+        path: deploy/postgres/overlays/production-with-namespace
         flags:
           global:
           - '-n=prod'
