@@ -121,7 +121,7 @@ spec:
       default: /workspace/workspace/app/
   steps:
   - name: deploy-postgres
-    image: gcr.io/k8s-skaffold/skaffold
+    image: gcr.io/k8s-skaffold/skaffold:v0.37.1
     workingDir: ${inputs.params.workingDir}
     command:
     - skaffold
@@ -130,7 +130,7 @@ spec:
     - '-p'
     - 'ci-postgres'
   - name: wait-for-postgres
-    image: gcr.io/k8s-skaffold/skaffold
+    image: gcr.io/k8s-skaffold/skaffold:v0.37.1
     workingDir: ${inputs.params.workingDir}
     command:
     - kubectl
@@ -158,7 +158,7 @@ spec:
     - '-run=Integration'
     - '-v'
   - name: destroy-postgres
-    image: gcr.io/k8s-skaffold/skaffold
+    image: gcr.io/k8s-skaffold/skaffold:v0.37.1
     workingDir: ${inputs.params.workingDir}
     command:
     - skaffold
@@ -233,7 +233,7 @@ spec:
       default: /workspace/workspace/app/
   steps:
   - name: deploy-postgres
-    image: gcr.io/k8s-skaffold/skaffold
+    image: gcr.io/k8s-skaffold/skaffold:v0.37.1
     workingDir: ${inputs.params.workingDir}
     command:
     - skaffold
@@ -242,7 +242,7 @@ spec:
     - '-p'
     - 'prod-postgres'
   - name: wait-for-postgres
-    image: gcr.io/k8s-skaffold/skaffold
+    image: gcr.io/k8s-skaffold/skaffold:v0.37.1
     workingDir: ${inputs.params.workingDir}
     command:
     - kubectl
@@ -254,7 +254,7 @@ spec:
     - '--for'
     - 'condition=available'
   - name: deploy-products
-    image: gcr.io/k8s-skaffold/skaffold
+    image: gcr.io/k8s-skaffold/skaffold:v0.37.1
     workingDir: ${inputs.params.workingDir}
     command:
     - skaffold
