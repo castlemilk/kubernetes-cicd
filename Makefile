@@ -12,6 +12,7 @@ RESET  := $(shell tput -Txterm sgr0)
 
 # run resolved task
 run:
+	$(call log_environment)
 	$(MAKET)
 
 all.gstack.local: components.kubernetes.minikube.create components.istio.install components.knative.install components.tekton.pipeline.install components.tekton.dashboard.install components.tekton.triggers.install
@@ -37,6 +38,9 @@ components.kubernetes.gke.pause: run
 ## resume cluster (scale workers up)
 components.kubernetes.gke.resume: run
 
+## update dns based off ingress dependnecies
+components.kubernetes.gke.dns: run
+
 ## install eks based kubernetes cluster
 components.kubernetes.eks.create: run
 
@@ -58,11 +62,11 @@ components.knative.install: run
 components.knative.uninstall: run
 
 ###Tekton
-## install tekton pipelines
-components.tekton.pipeline.install: run
+## install tekton pipelines controller
+components.tekton.controller.install: run
 
-## uninstall tekton pipelines
-components.tekton.pipeline.uninstall: run
+## uninstall tekton pipelines controller
+components.tekton.controller.uninstall: run
 
 ## install tekton dashboard
 components.tekton.dashboard.install: run

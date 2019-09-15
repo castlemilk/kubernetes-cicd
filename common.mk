@@ -21,6 +21,21 @@ define wait_for_deployment
 	@printf "  ✅\n";
 endef
 
+define log_environment
+	@printf "🧬   ${CLUSTER} environment selected \n"
+endef
+
+define gcp_create_dns_entry
+	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
+	printf "📇  Creating record for $(1) --> $$GATEWAY_IP in zone $(2) \n"; \
+	CURRENT_IP=`gcloud dns record-sets list --zone="$(2)" --name="$(1)" --format=json | jq -r ".[0].rrdatas[0]"`; \
+	gcloud dns record-sets transaction start --zone="$(2)"; \
+	gcloud dns record-sets transaction remove $$CURRENT_IP --name "$(1)" --ttl=5 --type=A --zone="$(2)"; \
+	gcloud dns record-sets transaction add $$GATEWAY_IP --name "$(1)" --ttl=5 --type=A --zone="$(2)"; \
+	gcloud dns record-sets transaction execute --zone="$(2)"
+	@rm -rf transaction.yaml
+endef
+
 define wait_for_ns_termination
 	
 	@printf "🌀   removing $(1) namespace";

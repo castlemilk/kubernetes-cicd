@@ -7,8 +7,11 @@ RED		 := $(shell tput -Txterm setaf 1)
 CYAN	 := $(shell tput -Txterm setaf 6)
 RESET  := $(shell tput -Txterm sgr0)
 
--include ../../common.mk
--include ../../env/${CLUSTER}.parameters
+TOPLVL=../../..
+
+include $(TOPLVL)/common.mk
+include $(TOPLVL)/env/${CLUSTER}.parameters
+
 ## create GKE cluster
 create:
 	time gcloud beta container clusters create kubernetes-cicd \
@@ -32,41 +35,23 @@ pause:
 resume:
 	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 3
 	gcloud container clusters get-credentials kubernetes-cicd
-	sleep 30
-	kubectl scale deployment -n knative-serving webhook --replicas 2
-	kubectl scale deployment -n knative-serving webhook --replicas 1
 
 ## delete gke cluster
 destroy:
 	gcloud beta container clusters delete kubernetes-cicd --zone="australia-southeast1-a"
 
 ## configure DNS settings for IP assigned to ingress-gateway
-dns.update:
+dns:
 	@gcloud dns managed-zones create kubernetes-cicd --no-user-output-enabled --dns-name ${BASE_ZONE} --description="base zone" > /dev/null 2>&1 || echo " ✅   base zone ${BASE_ZONE} already exists"
 	@gcloud dns managed-zones create default-namespace --no-user-output-enabled --dns-name ${DEFAULT_ZONE} --description="default namespace zone" > /dev/null 2>&1 || echo " ✅   default zone ${DEFAULT_ZONE} already exists"
 	@gcloud dns managed-zones create tekton-namespace --no-user-output-enabled --dns-name ${TEKTON_ZONE} --description="tekton namespace zone" > /dev/null 2>&1 || echo " ✅  tekton zone ${TEKTON_ZONE} already exists"
 	@gcloud dns managed-zones create non-prod-namespace --no-user-output-enabled --dns-name ${NP_ZONE} --description="tekton non-prod zone" > /dev/null 2>&1 || echo " ✅  tekton zone ${NP_ZONE} already exists"
 	@gcloud dns managed-zones create prod-namespace --no-user-output-enabled --dns-name ${PROD_ZONE} --description="tekton production zone" > /dev/null 2>&1 || echo " ✅  tekton zone ${PROD_ZONE} already exists"
 	rm -rf transaction.yaml
-	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
-	gcloud dns record-sets transaction start --zone="default-namespace"; \
-	gcloud dns record-sets transaction add $$GATEWAY_IP --name "*.${DEFAULT_ZONE}." --ttl=5 --type=A --zone="default-namespace"; \
-	gcloud dns record-sets transaction execute --zone="default-namespace" > /dev/null 2>&1 || echo " ✅   recordsets for ${DEFAULT_ZONE} already exists" 
-	rm -rf transaction.yaml
-	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
-	gcloud dns record-sets transaction start --zone="tekton-namespace"; \
-	gcloud dns record-sets transaction add $$GATEWAY_IP --name "*.${TEKTON_ZONE}." --ttl=5 --type=A --zone="tekton-namespace"; \
-	gcloud dns record-sets transaction execute --zone="tekton-namespace" > /dev/null 2>&1 || echo " ✅   recordsets for ${TEKTON_ZONE} already exists" 
-	rm -rf transaction.yaml
-	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
-	gcloud dns record-sets transaction start --zone="non-prod-namespace"; \
-	gcloud dns record-sets transaction add $$GATEWAY_IP --name "*.${NP_ZONE}." --ttl=5 --type=A --zone="non-prod-namespace"; \
-	gcloud dns record-sets transaction execute --zone="non-prod-namespace" > /dev/null 2>&1 || echo " ✅   recordsets for ${NP_ZONE} already exists"
-	rm -rf transaction.yaml
-	@GATEWAY_IP=`kubectl get svc istio-ingressgateway --namespace istio-system --output jsonpath="{.status.loadBalancer.ingress[*]['ip']}"`; \
-	gcloud dns record-sets transaction start --zone="prod-namespace"; \
-	gcloud dns record-sets transaction add $$GATEWAY_IP --name "*.${PROD_ZONE}." --ttl=5 --type=A --zone="prod-namespace"; \
-	gcloud dns record-sets transaction execute --zone="prod-namespace" > /dev/null 2>&1 || echo " ✅   recordsets for ${PROD_ZONE} already exists" 
+	$(call gcp_create_dns_entry,*.${DEFAULT_ZONE}.,default-namespace)
+	$(call gcp_create_dns_entry,*.${TEKTON_ZONE}.,tekton-namespace)
+	$(call gcp_create_dns_entry,*.${NP_ZONE}.,non-prod-namespace)
+	$(call gcp_create_dns_entry,*.${PROD_ZONE}.,prod-namespace)
 ###Help
 ## Show help
 help:
