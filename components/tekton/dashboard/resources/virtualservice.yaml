@@ -7,36 +7,8 @@ spec:
   - knative-ingress-gateway.knative-serving.svc.cluster.local
   - mesh
   hosts:
-  - tekton-dashboard.tekton-pipelines.cicd.benebsworth.com
+  - tekton-dashboard.__TEKTON_ZONE__
   http:
-  # - match:
-  #   - uri:
-  #       prefix: "/v1/extensions/webhooks-extension/web/"
-  #   rewrite:
-  #     uri: "/web/"
-  #   route:
-  #   - destination:
-  #       host: webhooks-extension.tekton-pipelines.svc.cluster.local
-  #       port:
-  #         number: 8080
-  # - match:
-  #   - uri:
-  #       prefix: "/web/"
-  #   route:
-  #   - destination:
-  #       host: webhooks-extension.tekton-pipelines.svc.cluster.local
-  #       port:
-  #         number: 8080
-  # - match:
-  #   - uri:
-  #       prefix: "/"
-  #   - uri:
-  #       prefix: "/proxy"
-  #   route:
-  #   - destination:
-  #       host: tekton-dashboard.tekton-pipelines.svc.cluster.local
-  #       port:
-  #         number: 9097
   - route:
     - destination:
         host: tekton-dashboard.tekton-pipelines.svc.cluster.local

@@ -10,7 +10,7 @@ RESET  := $(shell tput -Txterm sgr0)
 TOPLVL=../../..
 
 include $(TOPLVL)/common.mk
-include $(TOPLVL)/env/${CLUSTER}.parameters
+-include $(TOPLVL)/env/${CLUSTER}.parameters
 
 ## create GKE cluster
 create:
