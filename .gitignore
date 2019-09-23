@@ -6,3 +6,4 @@ app/src/backend/backend
 github-secret.yaml
 *.credentials
 .DS_Store
+transaction.yaml

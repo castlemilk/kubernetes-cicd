@@ -1,6 +1,8 @@
 bases:
 - ../../base
 - ../../istio
+patchesStrategicMerge:
+- schema.yaml
 resources:
 - namespace.yaml
 patchesJson6902:
