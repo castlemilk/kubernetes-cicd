@@ -1,0 +1,591 @@
+---
+# Source: ambassador/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ambassador
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+---
+# Source: ambassador/templates/crds.yaml
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: authservices.getambassador.io
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+  annotations:
+    "helm.sh/hook": crd-install
+  
+    "helm.sh/resource-policy": keep
+  
+spec:
+  group: getambassador.io
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+  scope: Namespaced
+  names:
+    plural: authservices
+    singular: authservice
+    kind: AuthService
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: consulresolvers.getambassador.io
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+  annotations:
+    "helm.sh/hook": crd-install
+  
+    "helm.sh/resource-policy": keep
+  
+spec:
+  group: getambassador.io
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+  scope: Namespaced
+  names:
+    plural: consulresolvers
+    singular: consulresolver
+    kind: ConsulResolver
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: kubernetesendpointresolvers.getambassador.io
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+  annotations:
+    "helm.sh/hook": crd-install
+  
+    "helm.sh/resource-policy": keep
+  
+spec:
+  group: getambassador.io
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+  scope: Namespaced
+  names:
+    plural: kubernetesendpointresolvers
+    singular: kubernetesendpointresolver
+    kind: KubernetesEndpointResolver
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: kubernetesserviceresolvers.getambassador.io
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+  annotations:
+    "helm.sh/hook": crd-install
+  
+    "helm.sh/resource-policy": keep
+  
+spec:
+  group: getambassador.io
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+  scope: Namespaced
+  names:
+    plural: kubernetesserviceresolvers
+    singular: kubernetesserviceresolver
+    kind: KubernetesServiceResolver
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: mappings.getambassador.io
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+  annotations:
+    "helm.sh/hook": crd-install
+  
+    "helm.sh/resource-policy": keep
+  
+spec:
+  group: getambassador.io
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+  scope: Namespaced
+  names:
+    plural: mappings
+    singular: mapping
+    kind: Mapping
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: modules.getambassador.io
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+  annotations:
+    "helm.sh/hook": crd-install
+  
+    "helm.sh/resource-policy": keep
+  
+spec:
+  group: getambassador.io
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+  scope: Namespaced
+  names:
+    plural: modules
+    singular: module
+    kind: Module
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ratelimitservices.getambassador.io
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+  annotations:
+    "helm.sh/hook": crd-install
+  
+    "helm.sh/resource-policy": keep
+  
+spec:
+  group: getambassador.io
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+  scope: Namespaced
+  names:
+    plural: ratelimitservices
+    singular: ratelimitservice
+    kind: RateLimitService
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tcpmappings.getambassador.io
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+  annotations:
+    "helm.sh/hook": crd-install
+  
+    "helm.sh/resource-policy": keep
+  
+spec:
+  group: getambassador.io
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+  scope: Namespaced
+  names:
+    plural: tcpmappings
+    singular: tcpmapping
+    kind: TCPMapping
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tlscontexts.getambassador.io
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+  annotations:
+    "helm.sh/hook": crd-install
+  
+    "helm.sh/resource-policy": keep
+  
+spec:
+  group: getambassador.io
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+  scope: Namespaced
+  names:
+    plural: tlscontexts
+    singular: tlscontext
+    kind: TLSContext
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tracingservices.getambassador.io
+  labels:
+    app.kubernetes.io/name: ambassador
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+  annotations:
+    "helm.sh/hook": crd-install
+  
+    "helm.sh/resource-policy": keep
+  
+spec:
+  group: getambassador.io
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+  scope: Namespaced
+  names:
+    plural: tracingservices
+    singular: tracingservice
+    kind: TracingService
+
+---
+# Source: ambassador/templates/crds-rbac.yaml
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: ambassador-crds
+  labels:
+    app.kubernetes.io/name: ambassador
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+rules:
+  - apiGroups: [ "apiextensions.k8s.io" ]
+    resources:
+    - customresourcedefinitions
+    resourceNames:
+    - authservices.getambassador.io
+    - mappings.getambassador.io
+    - modules.getambassador.io
+    - ratelimitservices.getambassador.io
+    - tcpmappings.getambassador.io
+    - tlscontexts.getambassador.io
+    - tracingservices.getambassador.io
+    - kubernetesendpointresolvers.getambassador.io
+    - kubernetesserviceresolvers.getambassador.io
+    - consulresolvers.getambassador.io
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: ambassador-crds
+  labels:
+    app.kubernetes.io/name: ambassador
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ambassador-crds
+subjects:
+  - name: ambassador
+    namespace: "ingress"
+    kind: ServiceAccount
+
+---
+# Source: ambassador/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: ambassador
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+rules:
+  - apiGroups: [""]
+    resources:
+    - namespaces
+    - services
+    - secrets
+    - endpoints
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [ "getambassador.io" ]
+    resources: [ "*" ]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [ "apiextensions.k8s.io" ]
+    resources: [ "customresourcedefinitions" ]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [ "networking.internal.knative.dev"]
+    resources: [ "clusteringresses" ]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [ "extensions" ]
+    resources: [ "ingresses" ]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [ "extensions" ]
+    resources: [ "ingresses/status" ]
+    verbs: ["update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: ambassador
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ambassador
+subjects:
+  - name: ambassador
+    namespace: "ingress"
+    kind: ServiceAccount
+---
+# Source: ambassador/templates/admin-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ambassador-admin
+  labels:
+    app.kubernetes.io/name: ambassador
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/part-of: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8877
+      targetPort: admin
+      protocol: TCP
+      name: admin
+  selector:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: ambassador/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ambassador
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/component: ambassador-service
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+    - name: https
+      port: 443
+      targetPort: 8443
+    - name: tcp-dask
+      port: 8786
+      targetPort: 8786
+    
+  selector:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/instance: RELEASE-NAME
+
+---
+# Source: ambassador/templates/tests/test-ready.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "ambassador-test-ready"
+  labels:
+    app.kubernetes.io/name: ambassador
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args:  ['ambassador:80/ambassador/v0/check_ready']
+  restartPolicy: Never
+
+---
+# Source: ambassador/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ambassador
+  labels:
+    app.kubernetes.io/name: ambassador
+    app.kubernetes.io/part-of: RELEASE-NAME
+    helm.sh/chart: ambassador-4.4.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Tiller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ambassador
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ambassador
+        app.kubernetes.io/part-of: RELEASE-NAME
+        app.kubernetes.io/instance: RELEASE-NAME
+      annotations:
+        checksum/config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+    spec:
+      securityContext:
+        runAsUser: 8888
+        
+      serviceAccountName: ambassador
+      volumes:
+        - name: ambassador-pod-info
+          downwardAPI:
+            items:
+              - fieldRef:
+                  fieldPath: metadata.labels
+                path: labels
+      containers:
+        - name: ambassador
+          image: "quay.io/datawire/ambassador:0.85.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: https
+              containerPort: 8443
+            - name: tcp-dask
+              containerPort: 8786
+            - name: admin
+              containerPort: 8877
+          env:
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: AMBASSADOR_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          livenessProbe:
+            httpGet:
+              path: /ambassador/v0/check_alive
+              port: admin
+            initialDelaySeconds: 30
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /ambassador/v0/check_ready
+              port: admin
+            initialDelaySeconds: 30
+            periodSeconds: 3
+          volumeMounts:
+            - name: ambassador-pod-info
+              mountPath: /tmp/ambassador-pod-info
+              readOnly: true
+          resources:
+            {}
+            
+      imagePullSecrets:
+        []
+        
+      dnsPolicy: ClusterFirst
+      hostNetwork: false
+
+---
+# Source: ambassador/templates/ambassador-devportal.yaml
+
+---
+# Source: ambassador/templates/ambassador-pro-auth.yaml
+
+
+---
+# Source: ambassador/templates/ambassador-pro-crd.yaml
+
+---
+# Source: ambassador/templates/ambassador-pro-license-key-secret.yaml
+
+---
+# Source: ambassador/templates/ambassador-pro-ratelimit.yaml
+
+---
+# Source: ambassador/templates/ambassador-pro-service.yaml
+
+---
+# Source: ambassador/templates/config.yaml
+
+
+---
+# Source: ambassador/templates/exporter-config.yaml
+
+
+---
+# Source: ambassador/templates/hpa.yaml
+
+
+---
+# Source: ambassador/templates/pdb.yaml
+
+

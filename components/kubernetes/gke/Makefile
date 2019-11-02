@@ -7,8 +7,9 @@ RED		 := $(shell tput -Txterm setaf 1)
 CYAN	 := $(shell tput -Txterm setaf 6)
 RESET  := $(shell tput -Txterm sgr0)
 
--include ../../common.mk
--include ../../env/${CLUSTER}.parameters
+TOPLVL=../../..
+-include $(TOPLVL)/common.mk
+-include $(TOPLVL)/env/${CLUSTER}.parameters
 ## create GKE cluster
 create:
 	time gcloud beta container clusters create kubernetes-cicd \
@@ -19,6 +20,34 @@ create:
 		--scopes="https://www.googleapis.com/auth/cloud-platform" \
 		--cluster-version 1.13.7-gke.8
 	gcloud container clusters get-credentials kubernetes-cicd
+
+auto-clean-enable:
+	@gcloud beta iam service-accounts create gke-scheduler \
+		--description "managing sheduling of worker nodes on gke" \
+    --display-name "gke-scheduler" || echo " ✅   serviceaccount already exists"
+	@gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+  	--member serviceAccount:gke-scheduler@${PROJECT_ID}.iam.gserviceaccount.com \
+  	--role roles/container.clusterAdmin || echo " ✅   binding already exists"
+	@gcloud beta scheduler jobs create http gke-cluster-auto-scale-down \
+	--schedule "0 */6 * * *" \
+	--uri='https://container.googleapis.com/v1beta1/projects/${PROJECT_ID}/zones/australia-southeast1-a/clusters/kubernetes-cicd/nodePools/default-pool/setSize' \
+	--message-body '{"nodeCount":0}' \
+	--time-zone=Australia/Melbourne \
+	--oauth-service-account-email gke-scheduler@${PROJECT_ID}.iam.gserviceaccount.com \
+	|| gcloud beta scheduler jobs update http gke-cluster-auto-scale-down \
+	--schedule "0 */6 * * *" \
+	--uri='https://container.googleapis.com/v1beta1/projects/${PROJECT_ID}/zones/australia-southeast1-a/clusters/kubernetes-cicd/nodePools/default-pool/setSize' \
+	--message-body '{"nodeCount":0}' \
+	--time-zone=Australia/Melbourne \
+	--oauth-service-account-email gke-scheduler@${PROJECT_ID}.iam.gserviceaccount.com && echo " ✅   sheduler job updated" 
+
+auto-clean-disable:
+	@gcloud projects remove-iam-policy-binding ${PROJECT_ID} \
+  	--member serviceAccount:gke-scheduler@${PROJECT_ID}.iam.gserviceaccount.com \
+  	--role roles/container.clusterAdmin || echo " ✅ binding already removed"
+	@gcloud beta iam service-accounts delete gke-scheduler@${PROJECT_ID}.iam.gserviceaccount.com
+	@gcloud beta scheduler jobs delete http gke-cluster-auto-scale-down
+
 
 ## get GKE credentials and context
 get-credentials:

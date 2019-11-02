@@ -1,0 +1,8 @@
+apiVersion: getambassador.io/v1
+kind:  TCPMapping
+metadata:
+  name: dask-scheduler
+spec:
+  port: 8786 
+  host: dask.benebsworth.com
+  service: dask-scheduler.dask:8786
