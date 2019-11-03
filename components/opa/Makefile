@@ -13,12 +13,12 @@ TOPLVL = ../..
 
 ## fetch depdencies
 fetch.chart:
-	helm fetch stable/dask --untar --untardir charts
+	helm fetch stable/opa --untar --untardir charts
 
 ## generate ambassador resources 
 generate: fetch.chart
-	kubectl create namespace dask --dry-run -o yaml | kubectl apply -f -
-	helm template charts/dask --set fullnameOverride=dask -f values/${CLUSTER}/values.yaml --namespace dask > resources/${CLUSTER}/dask.yaml
+	kubectl create namespace opa --dry-run -o yaml | kubectl apply -f -
+	helm template charts/opa --set fullnameOverride=opa -f values/${CLUSTER}/values.yaml --namespace opa > resources/${CLUSTER}/opa.yaml
 
 ## install ambassador
 
