@@ -1,0 +1,47 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: tekton-triggers-webhook
+  namespace: istio-system
+spec:
+  gateways:
+  - knative-ingress-gateway.knative-serving.svc.cluster.local
+  - mesh
+  hosts:
+  - triggers.tekton-pipelines.cicd.benebsworth.com
+  http:
+  - route:
+    - destination:
+        host: el-getting-started-listener.getting-started.svc.cluster.local
+        port:
+          number: 8080
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: tekton-triggers-webhook
+  namespace: istio-system
+spec:
+  host: el-getting-started-listener.getting-started.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: knative-ingress-gateway
+  namespace: knative-serving
+  labels:
+    serving.knative.dev/release: devel
+    networking.knative.dev/ingress-provider: istio
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"

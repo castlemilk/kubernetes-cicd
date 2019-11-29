@@ -1,0 +1,290 @@
+---
+# Source: opa/templates/serviceaccount.yaml
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: opa
+  labels:
+    app: opa
+    chart: opa-1.12.0
+    release: "RELEASE-NAME"
+    heritage: "Tiller"
+
+---
+# Source: opa/templates/mgmt-clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: opa
+    chart: opa-1.12.0
+    heritage: Tiller
+    release: RELEASE-NAME
+    component: mgmt
+  name: opa-mgmt
+rules:
+  - apiGroups:
+    - ""
+    resources:
+    - namespaces
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    verbs:
+    - get
+    - list
+    - watch
+    - patch
+  
+---
+# Source: opa/templates/mgmt-clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app: opa
+    chart: opa-1.12.0
+    heritage: Tiller
+    release: RELEASE-NAME
+    component: mgmt
+  name: opa-mgmt
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: opa-mgmt
+subjects:
+  - kind: ServiceAccount
+    name: opa
+    namespace: opa
+---
+# Source: opa/templates/service.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: opa
+  labels:
+    app: opa
+    chart: "opa-1.12.0"
+    release: "RELEASE-NAME"
+    heritage: "Tiller"
+spec:
+  selector:
+    app: opa
+  ports:
+  - name: https
+    protocol: TCP
+    port: 443
+    targetPort: 443
+
+---
+# Source: opa/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa
+  labels:
+    app: opa
+    chart: "opa-1.12.0"
+    release: "RELEASE-NAME"
+    heritage: "Tiller"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opa
+  template:
+    metadata:
+      annotations:
+        checksum/certs: 16eb439711a963fb0b5b3629143842142e15fb052de842dc17a3fc8ad7719e7e
+      labels:
+        app: opa
+      name: opa
+    spec:
+      initContainers:
+        - name: initpolicy
+          image: openpolicyagent/kube-mgmt:0.9
+          imagePullPolicy: IfNotPresent
+          resources:
+            {}
+            
+          command:
+          - /bin/sh
+          - -c
+          - |
+            tr -dc 'A-F0-9' < /dev/urandom | dd bs=1 count=32 2>/dev/null > /bootstrap/mgmt-token
+            TOKEN=`cat /bootstrap/mgmt-token`
+            cat > /bootstrap/authz.rego <<EOF
+            package system.authz
+            default allow = false
+            # Allow anonymous access to the default policy decision.
+            allow { input.path = [""]; input.method = "POST" }
+            allow { input.path = [""]; input.method = "GET" }
+            # This is only used for health check in liveness and readiness probe
+            allow { input.path = ["health"]; input.method = "GET" }
+            allow { input.identity == "$TOKEN" }
+            EOF
+          volumeMounts:
+            - name: bootstrap
+              mountPath: /bootstrap
+
+      containers:
+        - name: opa
+          image: openpolicyagent/opa:0.14.1
+          imagePullPolicy: IfNotPresent
+          resources:
+            {}
+            
+          args:
+            - "run"
+            - "--server"
+            - "--tls-cert-file=/certs/tls.crt"
+            - "--tls-private-key-file=/certs/tls.key"
+            - "--addr=0.0.0.0:443"
+            - "--log-level=info"
+            - "--log-format=text"
+            - "--authentication=token"
+            - "--authorization=basic"
+            - "--ignore=.*"
+            - "--addr=http://127.0.0.1:8181"
+            - "/bootstrap"
+          volumeMounts:
+            - name: certs
+              readOnly: true
+              mountPath: /certs
+            - name: bootstrap
+              readOnly: true
+              mountPath: /bootstrap
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 443
+              scheme: HTTPS
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 443
+              scheme: HTTPS
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            
+        - name: mgmt
+          image: openpolicyagent/kube-mgmt:0.9
+          imagePullPolicy: IfNotPresent
+          resources:
+            {}
+            
+          args:
+            - --opa-auth-token-file=/bootstrap/mgmt-token
+            - --opa-url=http://127.0.0.1:8181/v1
+            - --replicate-path=kubernetes
+            - --enable-policies=true
+            - --policies=opa,kube-federation-scheduling-policy
+            - --require-policy-label=true
+          volumeMounts:
+            - name: bootstrap
+              readOnly: true
+              mountPath: /bootstrap
+      serviceAccountName: opa
+      volumes:
+        - name: certs
+          secret:
+            secretName: opa-cert
+        - name: bootstrap
+          emptyDir: {}
+      nodeSelector:
+        {}
+        
+      tolerations:
+        []
+        
+
+---
+# Source: opa/templates/poddisruptionbudget.yaml
+
+
+---
+# Source: opa/templates/sar-clusterrole.yaml
+
+---
+# Source: opa/templates/sar-clusterrolebinding.yaml
+
+---
+# Source: opa/templates/secrets.yaml
+
+---
+# Source: opa/templates/servicemonitor.yaml
+
+
+---
+# Source: opa/templates/webhookconfiguration.yaml
+kind: ValidatingWebhookConfiguration
+apiVersion: admissionregistration.k8s.io/v1beta1
+metadata:
+  name: opa
+  annotations:
+  labels:
+    app: opa
+    chart: "opa-1.12.0"
+    release: "RELEASE-NAME"
+    heritage: "Tiller"
+webhooks:
+  - name: webhook.openpolicyagent.org
+    namespaceSelector:
+      matchExpressions:
+      - key: openpolicyagent.org/webhook
+        operator: NotIn
+        values:
+        - ignore
+      
+
+    failurePolicy: Ignore
+    rules:
+      - apiGroups:
+        - '*'
+        apiVersions:
+        - '*'
+        operations:
+        - '*'
+        resources:
+        - '*'
+      
+    clientConfig:
+
+
+      caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM4ekNDQWR1Z0F3SUJBZ0lCQVRBTkJna3Foa2lHOXcwQkFRc0ZBREFiTVJrd0Z3WURWUVFERXhCdmNHRXQKWVdSdGFYTnphVzl1TFdOaE1CNFhEVEU1TVRFd09UQXpNamMxTjFvWERUSTVNVEV3TmpBek1qYzFOMW93R3pFWgpNQmNHQTFVRUF4TVFiM0JoTFdGa2JXbHpjMmx2YmkxallUQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQCkFEQ0NBUW9DZ2dFQkFMc25SWXFuQUw2a1FQdUlxVXVVcldPMmQ2MFhxam1Lc1hDbkVRblluRXdWMytpL0Z5dFQKVlRIbFhSQ29rajg2VEw0UFZrYUJpUFdTTUY3MDRCTVdtMEdIQ1FDc0FPSHRnYW9oZGM3RXUwWm5ERVNRRU80bgp2NDVHcWVvcTRBMnZsTHdMYkRneHJ4MGZvTFBqZmRZYlRtRnJ6WjdvMERXdTR3MmlOd25nU2FtT3dOMHZEUW9yCmVpM2UwNXFaaWhMS1RDVHllOURlelhLR3R4aWY5U2xsVEJzaFVEU3h2M2JOMURJNGtuNFV3ZGtGMHhKa1ZsNWwKSTE3K2lHOE9paW1ZTDErWVJZbkJZeWFSaTlVeEQ2T2dSY24xWElHVVlRTUxJdXBwQ29BTjNmSFJwSElxbVJIYgo4eVJ4VWRMTHNjdVMrcHBQeWZZMEdVSmpKbTRwbGFtQkwxa0NBd0VBQWFOQ01FQXdEZ1lEVlIwUEFRSC9CQVFECkFnS2tNQjBHQTFVZEpRUVdNQlFHQ0NzR0FRVUZCd01CQmdnckJnRUZCUWNEQWpBUEJnTlZIUk1CQWY4RUJUQUQKQVFIL01BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQnFNMlZYZ0J5dkYwbFpXWHRNcXFrdUQ3K29kalZEdnFZeQpVcUV6UjlmNDR2aEZmR2s3Tm1PSXlxMFNzVGVmbDRJaWZSRmdyVy9xajg3anBSbVdBRlU4QTJQOGpDQ3djQ3dNCm5Vc0JNUkpwbHFvOU43WVZIWnMvTkVSeDdwODF5MGhkY21pMVF4bHVsRWJ0MHg2dEtvRnZSU2ZjT3hTK2o5NCsKY1ZMUmpnNkQvVnRJYXR4UDl1OEwxcGxRYWtFMDJtbktaNGxJanlxcks0L0N6dmU4elhVbm9TTGxOQ1VIMTV5QQpTWUNPSUlma3FPbU9uaEhkWTM4VWR1MS94cll1MEV5WEJNZDlSc29iQStSM1ZsZjNJZXdyZm5OOWErQmg3NDhuCk8rWGI2cGlwTWNyR1JaekVGb0MxNEJ0U1pjdDBPUGRyb3Jwak4wZGhBdXBMSjN3Mkl5NXoKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+
+
+      service:
+        name: opa
+        namespace: opa
+    sideEffects: Unknown
+
+
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: opa-cert
+  labels:
+    app: opa
+    chart: "opa-1.12.0"
+    release: "RELEASE-NAME"
+    heritage: "Tiller"
+type: Opaque
+data:
+
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM2ekNDQWRPZ0F3SUJBZ0lCQVRBTkJna3Foa2lHOXcwQkFRc0ZBREFiTVJrd0Z3WURWUVFERXhCdmNHRXQKWVdSdGFYTnphVzl1TFdOaE1CNFhEVEU1TVRFd09UQXpNamMxT0ZvWERUSTVNVEV3TmpBek1qYzFPRm93RmpFVQpNQklHQTFVRUF4TUxiM0JoTG05d1lTNXpkbU13Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLCkFvSUJBUURHeFNSMnp5YTI2YjBMR0J6amRibVdYd25HYldxcEp5WnB5a3VrbUVDU1lhNjJHdkdrajZCcUQ4TmMKUTV0MCthWEdVZ0lBYmdXeVRVNms0NzlydzBNaGhNYXdBUmthWHlQRUduYkZMTnptRW1rL3A5SUZIdWdTMFJMYwo4WjRoWXdBLzViNnhiSGl6ZTRISXU5dFlYR0pKaVA2OFVubWpYekNyOWFJb0FSYnFQNGtwWldsRUV0czVlZlByClJhYTBNMFd4WXBMRWpQUXU5S283clo2cFl1Nkd2dDQwMVdxMHdYOTQ1SjdBblQ4M3VlWHc3MW4vNGtIVDc2SU8KNHk0dUpVZ1l6UFVvTm9pNjNFU2tDdmFkNmpYQWx4d3VsRHU4T2Njdkd5Q29wVTJiRUVKdCtzVWFsYkZGRnRZSApSZnlaSThkM3ZQUmI2Q24va0NiNEJPV0tNUXI5QWdNQkFBR2pQekE5TUE0R0ExVWREd0VCL3dRRUF3SUZvREFkCkJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUlLd1lCQlFVSEF3SXdEQVlEVlIwVEFRSC9CQUl3QURBTkJna3EKaGtpRzl3MEJBUXNGQUFPQ0FRRUFUQ2o0enRQaFMrK0JPRkVVWVNZZWlIcWRzUHdWMExkTmhuaUZFTmhKaXFregpvcmlOVHBaZmRlQ25QbjNiM1d1MkVlMEQ5Qm11UmhORzh1SEpxTEtONDhpcU9oQ3hIRi9uUm1BeFBoZlRINlJyCndkd0FOeC9udTNCUElYWjd0ZUxtdlM0Y0VSSm8yT3J6MUlLUE9Ic21zVDF0ZGRBOEU2WU1CZTlLS0NSRXpMZzQKRDFIYUZCdUFLS2lJdURobitIRGw3TlBpSGNYZDVhNzFFZmhCd000dVF3MnNYTUIwZ2FiWUdraGFqTmRWems3bApCemhnM2h0Mmk4WXhlelRwK0RVcm80Q1AvalhvRUF0eHViNEVxVm52MU1sVjdTOHg2VHJSTFRQWFZQekp6VGZ3ClUvMVplNkFjVDBJQ1JzUG5naURpbm5MUzh1cWo3dG9INi85TVFhbzRuQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  tls.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBeHNVa2RzOG10dW05Q3hnYzQzVzVsbDhKeG0xcXFTY21hY3BMcEpoQWttR3V0aHJ4CnBJK2dhZy9EWEVPYmRQbWx4bElDQUc0RnNrMU9wT08vYThORElZVEdzQUVaR2w4anhCcDJ4U3pjNWhKcFA2ZlMKQlI3b0V0RVMzUEdlSVdNQVArVytzV3g0czN1QnlMdmJXRnhpU1lqK3ZGSjVvMTh3cS9XaUtBRVc2aitKS1dWcApSQkxiT1huejYwV210RE5Gc1dLU3hJejBMdlNxTzYyZXFXTHVocjdlTk5WcXRNRi9lT1Nld0owL043bmw4TzlaCi8rSkIwKytpRHVNdUxpVklHTXoxS0RhSXV0eEVwQXIybmVvMXdKY2NMcFE3dkRuSEx4c2dxS1ZObXhCQ2JmckYKR3BXeFJSYldCMFg4bVNQSGQ3ejBXK2dwLzVBbStBVGxpakVLL1FJREFRQUJBb0lCQVFDeHc0L1gzVzAvT28wQgp4Zi9ZQU9vSUxGaStxQTR5MXp1SWN3M3hWdVN3eFVHTnhVMEVvaHFSb0NWVWQzWXBTRGRVeFBUYlU0b3VxdXJCCmxwa1VGQjRPZFFPSVZvTVB6YlJiNWxyLy9oNVVlSFMrSkNVMHhTNUIzYzlqMzRaUFQ0M2lsMkpTcExMUnVZd1oKYk1BL0p1Z1Q0YndIeWk3VXlBWHNWQkpBZXJEMnJtUHF1ZDlsVGxQd0MwT0xlSldUMGJyQmNzSU9DNUhBRE9ONApnZTBaNHRTT2ZxeHB5dTgwZjc0K2w4eExNUHM3MUU1UTF3bjhEYzJqRHErQ3IyRkYxVGhLN1pmRUtkTFNYYU5lCm9YdDRSZzBzbStOQVhCcGVCeVRXallHZ3haWVV3ZkNMREIxNmRqa0o3cUdXL2RqbXdqNjJyMFhaZjFGSmVXRnIKTXdEUFJYODFBb0dCQU1wVS9VWCs0TGUxWmFJMzVGbWNyL203RUxFQmlQSGNxeWZ1cGwyTmFoVUNvRnpldFlCQwpSQlJqYkdxaSt5TGg0VXNVMUxZUkxvNVdIbnQySmxJM0xZN0s2Qzl1cTQwenFvQXBxV2xwUzZDNWFBVzhYTjdkCndmSGpKZktRb05iSWdYVmlqVFRiYUpqSTY5VjczalBqZWUrNlRvWmdnREdMWjRTR2gzelFGekUvQW9HQkFQdCsKU2NXK0FvZGpVeEttQ1RQcUNNR1Jlb2owK0x0N2FESGFkczRISGNCSlQzTnkvNkVTSy8ycVJWcTMzeG03bzZZNQpYMEpMYmsyRm1WWTNpSUwySmhRY0d4WkpBa0lKVHY5eVA3ZmplUGs5VW9MUVorbHVyNFREMEFBdXo5djNOMjB5CnQ3akNnZ1ZGUHB4MmZyUEZydzluUE5YallOU0VQT3hnNnF0SlQzakRBb0dBY3c2cGlHaE1PYXU1dyttc3ZSalIKS1Y0ck83ejN0eklaVW5mdnV6dHptOGNHa2tsRFJWQnBqbjZMWklpUjcyQXIwWnBpNjdZUmwzZDVsaE8xN3dMWgpzVjNKYzArbjFvQU84UnEvNytXazBCMGUva1FETytrM0pPcGE1ZmxBdldMLzIxVFRuNzgxVjh6SjczaWsvelRZClhtNi93TUtYbzVUMnBQSXJrZHB6bGRrQ2dZRUF2Nk1jN2Z4N0N0V3AwTFVLb0M5KzJwbFRpUmM2amdwY2ZGaWYKWFNGWkQxUU5vY2lJZUNGVHVpak1Ubk44SXF5ejZBOGh3bStlTHA1V0dMZWFZMGpUL1ZEcFp4TGRFSnJ0UW9PNQpnQk5xOUdsQS9ZTjNHdzZIMnFBbldHeFRZYWRBNmduU3E0d3o3WFkxWHA2QXI5WThMbjJaZ3RhUHk0QzB0OTZtCkV6MTZ2R2NDZ1lBc0JReEtRNnArWFRDbnlPU3JuSm1SSmtvSDNNYnVBWE1NQlZtZGpGa0V5QnNVdkFzSFJLMnIKNlMwKzFLZFp4bWxTZnRBdmNZT0l6YmNqVnZ1RnZTaVFjOFNZRW5NYWV0Y2lzQmYzYjFzYTVBZ1FZU0hOVERGUworMXFhaEdBclNQdXVYT0JzTk14clE5bDI3Ni8zUmdtZDVuc211UnFyRGUrSEpnMUpoK0tweEE9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
+
+
+

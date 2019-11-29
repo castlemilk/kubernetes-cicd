@@ -19,16 +19,32 @@ fetch.chart:
 generate: fetch.chart
 	kubectl create namespace opa --dry-run -o yaml | kubectl apply -f -
 	helm template charts/opa --set fullnameOverride=opa -f values/${CLUSTER}/values.yaml --namespace opa > resources/${CLUSTER}/opa.yaml
+	helm template charts/opa --set fullnameOverride=opa -x templates/webhookconfiguration.yaml -f values/${CLUSTER}/values.yaml --namespace opa > resources/${CLUSTER}/webhookconfiguration.yaml
 
 ## install ambassador
 
 install:
-	kubectl apply -n dask -f resources/${CLUSTER}/dask.yaml
+	kubectl apply -n opa -f resources/${CLUSTER}/webhookconfiguration.yaml
+	kubectl apply -n opa -f resources/${CLUSTER}/opa.yaml
+	kubectl label ns kube-system openpolicyagent.org/webhook=ignore
+	kubectl label ns opa openpolicyagent.org/webhook=ignore
+
 
 ## uninstall istio from cluster
 uninstall:
-	kubectl delete --ignore-not-found=true -f resources/${CLUSTER}/${ISTIO_VERSION}/istio.yaml	
-	$(call wait_for_ns_termination,istio-system)
+	kubectl delete --ignore-not-found=true -f resources/${CLUSTER}/webhookconfiguration.yaml -n opa
+	kubectl delete --ignore-not-found=true -f resources/${CLUSTER}/opa.yaml -n opa
+	kubectl delete namespace opa
+	$(call wait_for_ns_termination,opa)
+
+
+## create example configmaps
+example.policy.create:
+	kubectl apply -f resources/examples/greeting.cm.yaml -n opa
+	kubectl apply -f resources/examples/pod-registry.cm.yaml -n opa
+example.run:
+	kubectl create namespace opa-example --dry-run -o yaml | kubectl apply -f -
+	kubectl label namespace opa-example
 ###Help
 ## Show help
 help:

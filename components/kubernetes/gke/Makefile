@@ -12,13 +12,13 @@ TOPLVL=../../..
 -include $(TOPLVL)/env/${CLUSTER}.parameters
 ## create GKE cluster
 create:
-	time gcloud beta container clusters create kubernetes-cicd \
+	time gcloud container clusters create kubernetes-cicd \
 		--zone="australia-southeast1-a" \
 		--machine-type="n1-standard-4" \
 		--num-nodes="3" \
 		--no-user-output-enabled \
 		--scopes="https://www.googleapis.com/auth/cloud-platform" \
-		--cluster-version 1.13.7-gke.8
+		--cluster-version ${KUBERNETES_VERSION}
 	gcloud container clusters get-credentials kubernetes-cicd
 
 auto-clean-enable:
@@ -61,9 +61,9 @@ pause:
 resume:
 	time gcloud -q container clusters resize kubernetes-cicd --num-nodes 3
 	gcloud container clusters get-credentials kubernetes-cicd
-	sleep 30
-	kubectl scale deployment -n knative-serving webhook --replicas 2
-	kubectl scale deployment -n knative-serving webhook --replicas 1
+	# sleep 30
+	# kubectl scale deployment -n knative-serving webhook --replicas 2
+	# kubectl scale deployment -n knative-serving webhook --replicas 1
 
 ## delete gke cluster
 destroy:
@@ -71,7 +71,7 @@ destroy:
 
 ## configure DNS settings for IP assigned to ingress-gateway
 dns.update:
-	@gcloud dns managed-zones create kubernetes-cicd --no-user-output-enabled --dns-name ${BASE_ZONE} --description="base zone" > /dev/null 2>&1 || echo " ✅   base zone ${BASE_ZONE} already exists"
+	gcloud dns managed-zones create kubernetes-cicd --no-user-output-enabled --dns-name ${BASE_ZONE} --description="base zone" > /dev/null 2>&1 || echo " ✅   base zone ${BASE_ZONE} already exists"
 	@gcloud dns managed-zones create default-namespace --no-user-output-enabled --dns-name ${DEFAULT_ZONE} --description="default namespace zone" > /dev/null 2>&1 || echo " ✅   default zone ${DEFAULT_ZONE} already exists"
 	@gcloud dns managed-zones create tekton-namespace --no-user-output-enabled --dns-name ${TEKTON_ZONE} --description="tekton namespace zone" > /dev/null 2>&1 || echo " ✅  tekton zone ${TEKTON_ZONE} already exists"
 	@gcloud dns managed-zones create non-prod-namespace --no-user-output-enabled --dns-name ${NP_ZONE} --description="tekton non-prod zone" > /dev/null 2>&1 || echo " ✅  tekton zone ${NP_ZONE} already exists"

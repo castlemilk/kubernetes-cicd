@@ -1,0 +1,20 @@
+apiVersion: v1
+data:
+  ingress-whitelist.rego: "package kubernetes.admission\n\nimport data.kubernetes.namespaces\n\noperations
+    = {\"CREATE\", \"UPDATE\"}\n\ndeny[msg] {\n\tinput.request.kind.kind == \"Ingress\"\n\toperations[input.request.operation]\n\thost
+    := input.request.object.spec.rules[_].host\n\tnot fqdn_matches_any(host, valid_ingress_hosts)\n\tmsg
+    := sprintf(\"invalid ingress host %q\", [host])\n}\n\nvalid_ingress_hosts = {host
+    |\n\twhitelist := namespaces[input.request.namespace].metadata.annotations[\"ingress-whitelist\"]\n\thosts
+    := split(whitelist, \",\")\n\thost := hosts[_]\n}\n\nfqdn_matches_any(str, patterns)
+    {\n\tfqdn_matches(str, patterns[_])\n}\n\nfqdn_matches(str, pattern) {\n\tpattern_parts
+    := split(pattern, \".\")\n\tpattern_parts[0] == \"*\"\n\tstr_parts := split(str,
+    \".\")\n\tn_pattern_parts := count(pattern_parts)\n\tn_str_parts := count(str_parts)\n\tsuffix
+    := trim(pattern, \"*.\")\n\tendswith(str, suffix)\n}\n\nfqdn_matches(str, pattern)
+    {\n    not contains(pattern, \"*\")\n    str == pattern\n}"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: ingress-whitelist
+  namespace: opa
+  labels:
+    openpolicyagent.org/policy: rego

@@ -54,7 +54,7 @@ admissionControllerKind: ValidatingWebhookConfiguration
 
 # To _fail closed_ on failures, change to Fail. During initial testing, we
 # recommend leaving the failure policy as Ignore.
-admissionControllerFailurePolicy: Ignore
+admissionControllerFailurePolicy: Ignore 
 
 # Adds a namespace selector to the admission controller webhook
 admissionControllerNamespaceSelector:
@@ -121,7 +121,7 @@ mgmt:
   configmapPolicies:
 # NOTE IF you use these, remember to update the RBAC rules below to allow
 #      permissions to get, list, watch, patch and update configmaps
-    enabled: false
+    enabled: true
     namespaces: [opa, kube-federation-scheduling-policy]
     requireLabel: true
   replicate:
@@ -161,15 +161,24 @@ rbac:
   #
   create: true
   rules:
-    cluster: []
-    # - apiGroups:
-    #     - ""
-    #   resources:
-    #   - namespaces
-    #   verbs:
-    #   - get
-    #   - list
-    #   - watch
+    cluster:
+    - apiGroups:
+        - ""
+      resources:
+      - namespaces
+      verbs:
+      - get
+      - list
+      - watch
+    - apiGroups:
+        - ""
+      resources:
+      - configmaps
+      verbs:
+      - get
+      - list
+      - watch
+      - patch
 
 serviceAccount:
   # Specifies whether a ServiceAccount should be created

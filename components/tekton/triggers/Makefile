@@ -11,6 +11,7 @@ TOPLVL=../../..
 -include $(TOPLVL)/common.mk
 
 install:
+	kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/previous/v0.1.0/release.yaml
 uninstall:
 ###Help
 ## Show help

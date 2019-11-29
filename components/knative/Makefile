@@ -16,16 +16,14 @@ install:
 		--filename https://github.com/knative/serving/releases/download/${KNATIVE_VERSION}/serving.yaml \
 		--filename https://github.com/knative/eventing/releases/download/${KNATIVE_VERSION}/release.yaml \
 		--filename https://github.com/knative/serving/releases/download/${KNATIVE_VERSION}/monitoring.yaml \
-		--filename https://github.com/knative/serving/releases/download/${KNATIVE_VERSION}/serving-alpha-crds.yaml \
-		--filename https://github.com/knative/serving/releases/download/${KNATIVE_VERSION}/serving-beta-crds.yaml \
+		--filename https://github.com/knative/serving/releases/download/${KNATIVE_VERSION}/serving-crds.yaml \
 		--filename https://github.com/knative/eventing-contrib/releases/download/${KNATIVE_VERSION}/github.yaml
 	sleep 10
 	kubectl apply \
 		--filename https://github.com/knative/serving/releases/download/${KNATIVE_VERSION}/serving.yaml \
 		--filename https://github.com/knative/eventing/releases/download/${KNATIVE_VERSION}/release.yaml \
 		--filename https://github.com/knative/serving/releases/download/${KNATIVE_VERSION}/monitoring.yaml \
-		--filename https://github.com/knative/serving/releases/download/${KNATIVE_VERSION}/serving-alpha-crds.yaml \
-		--filename https://github.com/knative/serving/releases/download/${KNATIVE_VERSION}/serving-beta-crds.yaml \
+		--filename https://github.com/knative/serving/releases/download/${KNATIVE_VERSION}/serving-crds.yaml \
 		--filename https://github.com/knative/eventing-contrib/releases/download/${KNATIVE_VERSION}/github.yaml
 
 	kubectl apply -f resources/ingress

@@ -18,7 +18,7 @@ install:
 	@if [ ! -d $$GOPATH/src/github.com/tektoncd/dashboard ]; then \
 		cd $$GOPATH/src/github.com/tektoncd; git clone git@github.com:tektoncd/dashboard.git; \
 	fi
-	cd $$GOPATH/src/github.com/tektoncd/dashboard; git pull; kubectl apply -f config/release/gcr-tekton-dashboard.yaml
+	cd $$GOPATH/src/github.com/tektoncd/dashboard; git stash; git pull; kubectl apply -f config/release/gcr-tekton-dashboard.yaml
 	kubectl apply -f resources/
 
 install-master:
