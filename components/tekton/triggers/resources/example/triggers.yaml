@@ -28,23 +28,13 @@ spec:
     - apiVersion: tekton.dev/v1alpha1
       kind: PipelineResource
       metadata:
-        name: image-source-$(uid)
-        namespace: $(params.namespace)
-      spec:
-        type: image
-        params:
-          - name: url
-            value: DOCKERREPO-REPLACEME # docker-repo-location.com/repo:getting-started
-    - apiVersion: tekton.dev/v1alpha1
-      kind: PipelineResource
-      metadata:
         name: event-to-sink-$(uid)
         namespace: $(params.namespace)
       spec:
         type: cloudEvent
         params:
           - name: targetURI
-            value: http://event-display.getting-started.svc.cluster.local
+            value: http://event-display.getting-started.svc.cluster.local:8080
     - apiVersion: tekton.dev/v1alpha1
       kind: PipelineRun
       metadata:
@@ -58,9 +48,6 @@ spec:
           - name: source-repo
             resourceRef:
               name: source-repo-$(uid)
-          - name: image-source
-            resourceRef:
-              name: image-source-$(uid)
           - name: event-to-sink
             resourceRef:
               name: event-to-sink-$(uid)
@@ -73,11 +60,11 @@ metadata:
 spec:
   params:
     - name: gitrevision
-      value: $(body.head_commit.id)
+      value: $(body.pull_request.head.sha)
     - name: namespace
       value: getting-started
     - name: gitrepositoryurl
-      value: "https://github.com/$(body.repository.full_name)"
+      value: "https://github.com/$(body.pull_request.head.repo.full_name)"
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: EventListener

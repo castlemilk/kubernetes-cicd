@@ -12,6 +12,9 @@ TOPLVL=../../..
 
 install:
 	kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/previous/v0.1.0/release.yaml
+
+examples.apply:
+	kubectl apply -f resources/example
 uninstall:
 ###Help
 ## Show help
