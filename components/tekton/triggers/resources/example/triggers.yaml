@@ -74,7 +74,12 @@ metadata:
 spec:
   serviceAccountName: tekton-triggers-admin
   triggers:
-    - binding:
+    - name: github
+      interceptor:
+        github:
+          eventTypes:
+          - pull_request 
+      binding:
         name: getting-started-pipelinebinding
       template:
         name: getting-started-triggertemplate
