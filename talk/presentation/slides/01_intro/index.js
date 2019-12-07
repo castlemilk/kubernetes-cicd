@@ -242,27 +242,6 @@ export default [
     </Appear>
     </div>
   </Slide>,
-  // TODO: add slides for comparing templating tools
-  // <Slide align='center flex-top' transition={['slide']} bgColor='primary'>
-  //   <Heading textColor={COLOR_PALLETE['green']}>Templating & Config Management</Heading>
-  //   <div style={{ justifyContent: 'center', marginTop: '100px', display: 'flex', flexDirection: 'row'}}>
-  //   <Appear>
-  //       <Image margin={"0 0 0 0"} height={600} src={TemplatingFeatures} />
-  //   </Appear>
-  //   <Appear>
-  //       <Image margin={"0 0 0 0"} height={600} src={TemplatingHelm} />
-  //   </Appear>
-  //   <Appear>
-  //       <Image margin={"0 0 0 0"} height={600} src={TemplatingKustomize} />
-  //   </Appear>
-  //   <Appear>
-  //       <Image margin={"0 0 0 0"} height={600} src={TemplatingJsonnet} />
-  //   </Appear>
-  //   <Appear>
-  //       <Image margin={"0 0 0 0"} height={600} src={TemplatingKapitan} />
-  //   </Appear>
-  //   </div>
-  // </Slide>,
   <Slide align='center center' transition={['slide']} bgColor='primary'>
     <Heading textColor={COLOR_PALLETE['purple']}>Demo</Heading>
   </Slide>,
