@@ -1,0 +1,110 @@
+kind: KubernetesTest
+api: anchor.covarity.dev/alpha1v1
+metadata:
+  name: podValidation
+spec:
+# already exisiting resource that needs to be resolved
+#   objectRef:
+#     kind: Pod
+#     namespace: default
+#     label:
+#       key: run
+#       value: nginx
+  preSteps:
+    - action: CREATE
+      resources:
+        kubectl:
+        - name: nginx
+          kind: Pod
+          spec:
+        kustomize:
+          base: ../base
+        helm:
+          ...
+          ...
+  tests:
+  - type: AssertJSONPath
+    spec:
+      jsonPath: ".spec.nodeName"
+      value: "docker-desktop"
+    resources:
+      objectRef:
+        type: Resource
+        spec:
+          kind: Pod
+          namespace: default
+          labelKey: run
+          labelValue: nginx
+      objectRef:
+        type: File
+        spec:
+          filePath: ./samples/fixtures/pod.yaml
+      kubectl:
+        action: "CREATE"
+        path: 
+        - "./samples/fixtures/deploy.yaml"
+      helm:
+        action: "CREATE"
+        ...
+      kustomize:
+        action: "CREATE"
+        path: "./samples/fixtures/overlays"
+
+  - type: AssertValidation
+    spec:
+      expectedError: "Internal error occurred: admission webhook \"webhook.openpolicyagent.org\" denied the request: External Loadbalancers cannot be deployed in this cluster"
+    # objectRef:
+    #   type: Resource
+    #   spec:
+    #     kind: Pod
+    #     namespace: default
+    #     labelKey: run
+    #     labelValue: nginx
+    # objectRef:
+    #   type: File
+    #   spec:
+    #     filePath: ./samples/fixtures/pod.yaml
+    kubectl:
+      action: "CREATE"
+      path: 
+      - "./samples/fixtures/loadbalancer.yaml"
+    # helm:
+    #   action: "CREATE"
+    #   ...
+    # kustomize:
+    #   action: "CREATE"
+    #   path: "./samples/fixtures/overlays"
+  - type: AssertMutation
+    spec:
+      jsonPath: ".metadata.labels.function"
+      value: "workload"
+    # objectRef:
+    #   type: Resource
+    #   spec:
+    #     kind: Pod
+    #     namespace: default
+    #     labelKey: run
+    #     labelValue: nginx
+    # objectRef:
+    #   type: File
+    #   spec:
+    #     filePath: ./samples/fixtures/pod.yaml
+    kubectl:
+      action: "CREATE"
+      path: 
+      - "./samples/fixtures/deploy.yaml"
+    # helm:
+    #   action: "CREATE"
+    #   ...
+    # kustomize:
+    #   action: "CREATE"
+    #   path: "./samples/fixtures/overlays"
+    
+ postSteps:
+    - action: DELETE
+      resources: 
+        kubectl:
+        - name: nginx
+          kind: Pod
+          spec:
+            ...
