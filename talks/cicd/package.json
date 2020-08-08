@@ -21,7 +21,7 @@
     "builder": "^4.0.0",
     "firebase": "^5.11.1",
     "normalize.css": "8.0.0",
-    "prismjs": "1.6.0",
+    "prismjs": "1.21.0",
     "rc-progress": "^2.5.2",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
