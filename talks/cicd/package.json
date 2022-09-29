@@ -29,7 +29,7 @@
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
     "react-stars": "^2.2.5",
-    "spectacle": "^5.7.0",
+    "spectacle": "^9.6.0",
     "spectacle-code-slide": "github:castlemilk/spectacle-code-slide#latest",
     "spectacle-renderer": "^0.0.3",
     "spectacle-terminal": "^0.5.0",
